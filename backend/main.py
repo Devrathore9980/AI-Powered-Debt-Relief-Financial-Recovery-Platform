@@ -2,8 +2,9 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import engine, Base, SessionLocal
 from models import User
-from schemas import UserCreate, UserResponse
+from schemas import UserCreate, UserResponse, NegotiationRequest
 from auth import hash_password, verify_password, create_access_token
+from ai_engine import generate_negotiation_strategy
 
 
 Base.metadata.create_all(bind=engine)
@@ -46,3 +47,12 @@ def login_user(email: str, password: str, db: Session = Depends(get_db)):
 
     access_token = create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"}
+
+@app.post("/negotiate")
+def negotiate(request: NegotiationRequest):
+    strategy = generate_negotiation_strategy(
+        loan_amount=request.loan_amount,
+        overdue_months=request.overdue_months,
+        debt_stress_level=request.debt_stress_level
+    )
+    return {"strategy": strategy}

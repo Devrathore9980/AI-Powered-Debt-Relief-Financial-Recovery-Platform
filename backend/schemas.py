@@ -13,3 +13,8 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class NegotiationRequest(BaseModel):
+    loan_amount: float
+    overdue_months: int
+    debt_stress_level: str
