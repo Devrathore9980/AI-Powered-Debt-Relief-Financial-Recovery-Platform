@@ -3,60 +3,63 @@ import axios from 'axios'
 import './App.css'
 
 function App() {
+  const [isLogin, setIsLogin] = useState(false)
+
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
 
-  const handleSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault()
-
     try {
       const response = await axios.post('http://127.0.0.1:8000/register', {
-        name: name,
-        email: email,
-        password: password
+        name, email, password
       })
       setMessage(`Success! User registered with ID: ${response.data.id}`)
     } catch (error) {
-      if (error.response) {
-        setMessage(`Error: ${error.response.data.detail}`)
-      } else {
-        setMessage('Error: Backend se connect nahi ho paya')
-      }
+      setMessage(error.response ? `Error: ${error.response.data.detail}` : 'Backend se connect nahi ho paya')
+    }
+  }
+
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    try {
+      const response = await axios.post(
+        `http://127.0.0.1:8000/login?email=${email}&password=${password}`
+      )
+      localStorage.setItem('token', response.data.access_token)
+      setMessage('Login successful! Token saved.')
+    } catch (error) {
+      setMessage(error.response ? `Error: ${error.response.data.detail}` : 'Backend se connect nahi ho paya')
     }
   }
 
   return (
     <div className="App">
-      <h1>FinRelief AI - Register</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Name:</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
+      <h1>FinRelief AI</h1>
+      <button onClick={() => { setIsLogin(!isLogin); setMessage('') }}>
+        {isLogin ? 'Switch to Register' : 'Switch to Login'}
+      </button>
+
+      <form onSubmit={isLogin ? handleLogin : handleRegister}>
+        {!isLogin && (
+          <div>
+            <label>Name:</label>
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+        )}
         <div>
           <label>Email:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
         <div>
           <label>Password:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
-        <button type="submit">Register</button>
+        <button type="submit">{isLogin ? 'Login' : 'Register'}</button>
       </form>
+
       {message && <p>{message}</p>}
     </div>
   )
