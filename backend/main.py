@@ -5,11 +5,20 @@ from models import User, DebtRecord
 from schemas import UserCreate, UserResponse, NegotiationRequest, DebtRecordCreate, DebtRecordResponse
 from auth import hash_password, verify_password, create_access_token
 from ai_engine import generate_negotiation_strategy
+from fastapi.middleware.cors import CORSMiddleware
 
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def get_db():
     db = SessionLocal()

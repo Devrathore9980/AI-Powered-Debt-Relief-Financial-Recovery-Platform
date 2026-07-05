@@ -1,14 +1,30 @@
 import { useState } from 'react'
+import axios from 'axios'
 import './App.css'
 
 function App() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [message, setMessage] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Form data:', { name, email, password })
+
+    try {
+      const response = await axios.post('http://127.0.0.1:8000/register', {
+        name: name,
+        email: email,
+        password: password
+      })
+      setMessage(`Success! User registered with ID: ${response.data.id}`)
+    } catch (error) {
+      if (error.response) {
+        setMessage(`Error: ${error.response.data.detail}`)
+      } else {
+        setMessage('Error: Backend se connect nahi ho paya')
+      }
+    }
   }
 
   return (
@@ -41,6 +57,7 @@ function App() {
         </div>
         <button type="submit">Register</button>
       </form>
+      {message && <p>{message}</p>}
     </div>
   )
 }
