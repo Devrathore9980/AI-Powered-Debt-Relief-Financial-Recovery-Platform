@@ -18,3 +18,19 @@ class NegotiationRequest(BaseModel):
     loan_amount: float
     overdue_months: int
     debt_stress_level: str
+
+class DebtRecordCreate(BaseModel):
+    user_email: EmailStr
+    loan_amount: float
+    overdue_months: int
+    debt_stress_level: str
+
+class DebtRecordResponse(BaseModel):
+    id: int
+    loan_amount: float
+    overdue_months: int
+    debt_stress_level: str
+    ai_strategy: str | None
+
+    class Config:
+        from_attributes = True

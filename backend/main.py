@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import engine, Base, SessionLocal
-from models import User
-from schemas import UserCreate, UserResponse, NegotiationRequest
+from models import User, DebtRecord
+from schemas import UserCreate, UserResponse, NegotiationRequest, DebtRecordCreate, DebtRecordResponse
 from auth import hash_password, verify_password, create_access_token
 from ai_engine import generate_negotiation_strategy
 
@@ -56,3 +56,27 @@ def negotiate(request: NegotiationRequest):
         debt_stress_level=request.debt_stress_level
     )
     return {"strategy": strategy}
+
+@app.post("/debt-record", response_model=DebtRecordResponse)
+def create_debt_record(record: DebtRecordCreate, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == record.user_email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User nahi mila")
+
+    strategy = generate_negotiation_strategy(
+        loan_amount=record.loan_amount,
+        overdue_months=record.overdue_months,
+        debt_stress_level=record.debt_stress_level
+    )
+
+    new_record = DebtRecord(
+        loan_amount=record.loan_amount,
+        overdue_months=record.overdue_months,
+        debt_stress_level=record.debt_stress_level,
+        ai_strategy=strategy,
+        owner_id=user.id
+    )
+    db.add(new_record)
+    db.commit()
+    db.refresh(new_record)
+    return new_record
