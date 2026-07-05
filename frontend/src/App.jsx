@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import axios from 'axios'
+import Dashboard from './Dashboard'
 import './App.css'
 
 function App() {
   const [isLogin, setIsLogin] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -29,10 +31,23 @@ function App() {
         `http://127.0.0.1:8000/login?email=${email}&password=${password}`
       )
       localStorage.setItem('token', response.data.access_token)
-      setMessage('Login successful! Token saved.')
+      localStorage.setItem('userEmail', email)
+      setIsLoggedIn(true)
     } catch (error) {
       setMessage(error.response ? `Error: ${error.response.data.detail}` : 'Backend se connect nahi ho paya')
     }
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('userEmail')
+    setIsLoggedIn(false)
+    setEmail('')
+    setPassword('')
+  }
+
+  if (isLoggedIn) {
+    return <Dashboard userEmail={localStorage.getItem('userEmail')} onLogout={handleLogout} />
   }
 
   return (
