@@ -270,3 +270,56 @@ h1 {
 .loan-item:last-child {
   border-bottom: none;
 }
+
+.button-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.btn-secondary {
+  background: #b7791f;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.prediction-box {
+  border-left-color: #b7791f;
+}
+
+.email-box {
+  border-left-color: #2c5f5f;
+}
+
+.email-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.email-text {
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-top: 10px;
+}
+
+.btn-copy {
+  background: #2c5f5f;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}

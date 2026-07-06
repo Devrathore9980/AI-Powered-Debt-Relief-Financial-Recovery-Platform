@@ -6,17 +6,26 @@ function Dashboard({ userEmail, onLogout }) {
   const [overdueMonths, setOverdueMonths] = useState('')
   const [stressLevel, setStressLevel] = useState('Medium')
   const [language, setLanguage] = useState('English')
+  const [lenderName, setLenderName] = useState('')
   const [strategy, setStrategy] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Naya state — dashboard summary aur loans list ke liye
+  const [prediction, setPrediction] = useState('')
+  const [predictionLoading, setPredictionLoading] = useState(false)
+  const [predictionError, setPredictionError] = useState('')
+
+  // Naye states — Email Generator ke liye
+  const [emailContent, setEmailContent] = useState('')
+  const [emailLoading, setEmailLoading] = useState(false)
+  const [emailError, setEmailError] = useState('')
+  const [copied, setCopied] = useState(false)
+
   const [dashboardData, setDashboardData] = useState(null)
   const [dashboardError, setDashboardError] = useState('')
 
   const token = localStorage.getItem('token')
 
-  // Dashboard data fetch karne wala function
   const fetchDashboardData = async () => {
     try {
       const response = await axios.get('http://127.0.0.1:8000/dashboard-data', {
@@ -28,7 +37,6 @@ function Dashboard({ userEmail, onLogout }) {
     }
   }
 
-  // Component load hote hi ek baar dashboard data fetch karo
   useEffect(() => {
     fetchDashboardData()
   }, [])
@@ -48,14 +56,61 @@ function Dashboard({ userEmail, onLogout }) {
         language: language
       })
       setStrategy(response.data.ai_strategy)
-
-      // Naya loan add hone ke baad dashboard data refresh karo
       fetchDashboardData()
     } catch (err) {
       setError(err.response ? err.response.data.detail : 'Backend se connect nahi ho paya')
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSettlementPredict = async () => {
+    setPredictionLoading(true)
+    setPredictionError('')
+    setPrediction('')
+
+    try {
+      const response = await axios.post('http://127.0.0.1:8000/settlement-predictor', {
+        loan_amount: parseFloat(loanAmount),
+        overdue_months: parseInt(overdueMonths),
+        debt_stress_level: stressLevel,
+        language: language
+      })
+      setPrediction(response.data.prediction)
+    } catch (err) {
+      setPredictionError(err.response ? err.response.data.detail : 'Backend se connect nahi ho paya')
+    } finally {
+      setPredictionLoading(false)
+    }
+  }
+
+  // Naya function — Negotiation Email generate karne ke liye
+  const handleGenerateEmail = async () => {
+    setEmailLoading(true)
+    setEmailError('')
+    setEmailContent('')
+    setCopied(false)
+
+    try {
+      const response = await axios.post('http://127.0.0.1:8000/generate-negotiation-email', {
+        loan_amount: parseFloat(loanAmount),
+        overdue_months: parseInt(overdueMonths),
+        debt_stress_level: stressLevel,
+        lender_name: lenderName || 'Lender',
+        language: language
+      })
+      setEmailContent(response.data.email_content)
+    } catch (err) {
+      setEmailError(err.response ? err.response.data.detail : 'Backend se connect nahi ho paya')
+    } finally {
+      setEmailLoading(false)
+    }
+  }
+
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText(emailContent)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   return (
@@ -66,7 +121,6 @@ function Dashboard({ userEmail, onLogout }) {
       </div>
       <p>Welcome, {userEmail}</p>
 
-      {/* ===== Summary Section ===== */}
       {dashboardError && <p className="message error">{dashboardError}</p>}
 
       {dashboardData && (
@@ -91,7 +145,6 @@ function Dashboard({ userEmail, onLogout }) {
         </div>
       )}
 
-      {/* ===== Add Loan Form ===== */}
       <div className="card">
         <form onSubmit={handleSubmit}>
           <div className="field">
@@ -121,6 +174,15 @@ function Dashboard({ userEmail, onLogout }) {
             </select>
           </div>
           <div className="field">
+            <label>Lender Name (email ke liye)</label>
+            <input
+              type="text"
+              placeholder="e.g. HDFC Bank, Bajaj Finserv"
+              value={lenderName}
+              onChange={(e) => setLenderName(e.target.value)}
+            />
+          </div>
+          <div className="field">
             <label>AI Response Language</label>
             <select value={language} onChange={(e) => setLanguage(e.target.value)}>
               <option value="English">English</option>
@@ -128,12 +190,35 @@ function Dashboard({ userEmail, onLogout }) {
               <option value="Hinglish">Hinglish</option>
             </select>
           </div>
-          <button className="btn-primary" type="submit" disabled={loading}>
-            {loading ? 'Generating Strategy...' : 'Get Negotiation Strategy'}
-          </button>
+
+          <div className="button-row">
+            <button className="btn-primary" type="submit" disabled={loading}>
+              {loading ? 'Generating Strategy...' : 'Get Negotiation Strategy'}
+            </button>
+
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={handleSettlementPredict}
+              disabled={predictionLoading || !loanAmount || !overdueMonths}
+            >
+              {predictionLoading ? 'Predicting...' : 'Get Settlement Prediction'}
+            </button>
+
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={handleGenerateEmail}
+              disabled={emailLoading || !loanAmount || !overdueMonths}
+            >
+              {emailLoading ? 'Writing Email...' : 'Generate Negotiation Email'}
+            </button>
+          </div>
         </form>
 
         {error && <p className="message error">{error}</p>}
+        {predictionError && <p className="message error">{predictionError}</p>}
+        {emailError && <p className="message error">{emailError}</p>}
 
         {strategy && (
           <div className="strategy-box">
@@ -141,9 +226,27 @@ function Dashboard({ userEmail, onLogout }) {
             <p>{strategy}</p>
           </div>
         )}
+
+        {prediction && (
+          <div className="strategy-box prediction-box">
+            <h3>Settlement Prediction</h3>
+            <p>{prediction}</p>
+          </div>
+        )}
+
+        {emailContent && (
+          <div className="strategy-box email-box">
+            <div className="email-box-header">
+              <h3>Negotiation Email (ready to send)</h3>
+              <button type="button" className="btn-copy" onClick={handleCopyEmail}>
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
+            </div>
+            <pre className="email-text">{emailContent}</pre>
+          </div>
+        )}
       </div>
 
-      {/* ===== Loans List Section ===== */}
       {dashboardData && dashboardData.loans && dashboardData.loans.length > 0 && (
         <div className="card">
           <h3>Your Loans</h3>
