@@ -34,3 +34,9 @@ class DebtRecordResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class FinancialHealthResponse(BaseModel):
+    total_debt: float
+    total_loans: int
+    average_overdue_months: float
+    health_status: str

@@ -2,10 +2,12 @@ import { useState } from 'react'
 import axios from 'axios'
 import Dashboard from './Dashboard'
 import './App.css'
+import Landing from './Landing'
 
 function App() {
   const [isLogin, setIsLogin] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [showAuth, setShowAuth] = useState(false)
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -50,32 +52,42 @@ function App() {
     return <Dashboard userEmail={localStorage.getItem('userEmail')} onLogout={handleLogout} />
   }
 
+  if (isLoggedIn) {
+  return <Dashboard userEmail={localStorage.getItem('userEmail')} onLogout={handleLogout} />
+}
+
+if (!showAuth) {
+  return <Landing onGetStarted={() => setShowAuth(true)} />
+}
+
   return (
     <div className="App">
       <h1>FinRelief AI</h1>
-      <button onClick={() => { setIsLogin(!isLogin); setMessage('') }}>
-        {isLogin ? 'Switch to Register' : 'Switch to Login'}
-      </button>
+      <div className="card">
+        <button className="btn-link" onClick={() => { setIsLogin(!isLogin); setMessage('') }}>
+          {isLogin ? 'Naya account banayein →' : 'Pehle se account hai? Login karein →'}
+        </button>
 
-      <form onSubmit={isLogin ? handleLogin : handleRegister}>
-        {!isLogin && (
-          <div>
-            <label>Name:</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+        <form onSubmit={isLogin ? handleLogin : handleRegister}>
+          {!isLogin && (
+            <div className="field">
+              <label>Name</label>
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+          )}
+          <div className="field">
+            <label>Email</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
-        )}
-        <div>
-          <label>Email:</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        </div>
-        <div>
-          <label>Password:</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        </div>
-        <button type="submit">{isLogin ? 'Login' : 'Register'}</button>
-      </form>
+          <div className="field">
+            <label>Password</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          </div>
+          <button className="btn-primary" type="submit">{isLogin ? 'Login' : 'Register'}</button>
+        </form>
 
-      {message && <p>{message}</p>}
+        {message && <p className="message">{message}</p>}
+      </div>
     </div>
   )
 }

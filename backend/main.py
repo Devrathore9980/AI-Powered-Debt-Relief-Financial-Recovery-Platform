@@ -2,10 +2,11 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import engine, Base, SessionLocal
 from models import User, DebtRecord
-from schemas import UserCreate, UserResponse, NegotiationRequest, DebtRecordCreate, DebtRecordResponse
+from schemas import UserCreate, UserResponse, NegotiationRequest, DebtRecordCreate, DebtRecordResponse, FinancialHealthResponse
 from auth import hash_password, verify_password, create_access_token
 from ai_engine import generate_negotiation_strategy
 from fastapi.middleware.cors import CORSMiddleware
+
 
 
 Base.metadata.create_all(bind=engine)
@@ -89,3 +90,57 @@ def create_debt_record(record: DebtRecordCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_record)
     return new_record
+
+@app.get("/loans", response_model=list[DebtRecordResponse])
+def get_loans(email: str, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User nahi mila")
+
+    loans = db.query(DebtRecord).filter(DebtRecord.owner_id == user.id).all()
+    return loans
+
+
+@app.delete("/loans/{loan_id}")
+def delete_loan(loan_id: int, db: Session = Depends(get_db)):
+    loan = db.query(DebtRecord).filter(DebtRecord.id == loan_id).first()
+    if not loan:
+        raise HTTPException(status_code=404, detail="Loan record nahi mila")
+
+    db.delete(loan)
+    db.commit()
+    return {"message": "Loan record delete ho gaya"}
+
+@app.get("/financial-health", response_model=FinancialHealthResponse)
+def financial_health(email: str, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User nahi mila")
+
+    loans = db.query(DebtRecord).filter(DebtRecord.owner_id == user.id).all()
+
+    if not loans:
+        return FinancialHealthResponse(
+            total_debt=0,
+            total_loans=0,
+            average_overdue_months=0,
+            health_status="No Data"
+        )
+
+    total_debt = sum(loan.loan_amount for loan in loans)
+    total_loans = len(loans)
+    average_overdue = sum(loan.overdue_months for loan in loans) / total_loans
+
+    if average_overdue <= 2:
+        status = "Good"
+    elif average_overdue <= 6:
+        status = "Moderate"
+    else:
+        status = "Critical"
+
+    return FinancialHealthResponse(
+        total_debt=total_debt,
+        total_loans=total_loans,
+        average_overdue_months=round(average_overdue, 1),
+        health_status=status
+    )

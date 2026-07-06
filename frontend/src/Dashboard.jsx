@@ -30,54 +30,56 @@ function Dashboard({ userEmail, onLogout }) {
     }
   }
 
-  return (
+ return (
     <div className="Dashboard">
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <h1>FinRelief AI - Dashboard</h1>
+      <div className="top-bar">
+        <h1>FinRelief AI</h1>
         <button onClick={onLogout}>Logout</button>
       </div>
       <p>Welcome, {userEmail}</p>
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Loan Amount (₹):</label>
-          <input
-            type="number"
-            value={loanAmount}
-            onChange={(e) => setLoanAmount(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Overdue Months:</label>
-          <input
-            type="number"
-            value={overdueMonths}
-            onChange={(e) => setOverdueMonths(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Debt Stress Level:</label>
-          <select value={stressLevel} onChange={(e) => setStressLevel(e.target.value)}>
-            <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
-            <option value="High">High</option>
-          </select>
-        </div>
-        <button type="submit" disabled={loading}>
-          {loading ? 'Generating Strategy...' : 'Get Negotiation Strategy'}
-        </button>
-      </form>
+      <div className="card">
+        <form onSubmit={handleSubmit}>
+          <div className="field">
+            <label>Loan Amount (₹)</label>
+            <input
+              type="number"
+              value={loanAmount}
+              onChange={(e) => setLoanAmount(e.target.value)}
+              required
+            />
+          </div>
+          <div className="field">
+            <label>Overdue Months</label>
+            <input
+              type="number"
+              value={overdueMonths}
+              onChange={(e) => setOverdueMonths(e.target.value)}
+              required
+            />
+          </div>
+          <div className="field">
+            <label>Debt Stress Level</label>
+            <select value={stressLevel} onChange={(e) => setStressLevel(e.target.value)}>
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+          <button className="btn-primary" type="submit" disabled={loading}>
+            {loading ? 'Generating Strategy...' : 'Get Negotiation Strategy'}
+          </button>
+        </form>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && <p className="message error">{error}</p>}
 
-      {strategy && (
-        <div style={{ marginTop: '20px', textAlign: 'left', whiteSpace: 'pre-wrap' }}>
-          <h3>Your Negotiation Strategy:</h3>
-          <p>{strategy}</p>
-        </div>
-      )}
+        {strategy && (
+          <div className="strategy-box">
+            <h3>Your Negotiation Strategy</h3>
+            <p>{strategy}</p>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
