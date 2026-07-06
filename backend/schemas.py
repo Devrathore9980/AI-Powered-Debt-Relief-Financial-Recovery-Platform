@@ -43,3 +43,11 @@ class FinancialHealthResponse(BaseModel):
 
 class SettlementPredictionResponse(BaseModel):
     prediction: str
+
+class DashboardDataResponse(BaseModel):
+    user_name: str
+    user_email: str
+    total_debt: float
+    total_loans: int
+    health_status: str
+    loans: list[DebtRecordResponse]

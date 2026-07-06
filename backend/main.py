@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import engine, Base, SessionLocal
 from models import User, DebtRecord
-from schemas import UserCreate, UserResponse, NegotiationRequest, DebtRecordCreate, DebtRecordResponse, FinancialHealthResponse, SettlementPredictionResponse
+from schemas import UserCreate, UserResponse, NegotiationRequest, DebtRecordCreate, DebtRecordResponse, FinancialHealthResponse, SettlementPredictionResponse,  DashboardDataResponse
 from auth import hash_password, verify_password, create_access_token
 from ai_engine import generate_negotiation_strategy, predict_settlement
 from fastapi.middleware.cors import CORSMiddleware
@@ -152,3 +152,34 @@ def settlement_predictor(request: NegotiationRequest):
         debt_stress_level=request.debt_stress_level
     )
     return {"prediction": prediction}
+
+@app.get("/dashboard-data", response_model=DashboardDataResponse)
+def dashboard_data(email: str, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User nahi mila")
+
+    loans = db.query(DebtRecord).filter(DebtRecord.owner_id == user.id).all()
+
+    total_debt = sum(loan.loan_amount for loan in loans)
+    total_loans = len(loans)
+
+    if total_loans == 0:
+        health_status = "No Data"
+    else:
+        average_overdue = sum(loan.overdue_months for loan in loans) / total_loans
+        if average_overdue <= 2:
+            health_status = "Good"
+        elif average_overdue <= 6:
+            health_status = "Moderate"
+        else:
+            health_status = "Critical"
+
+    return DashboardDataResponse(
+        user_name=user.name,
+        user_email=user.email,
+        total_debt=total_debt,
+        total_loans=total_loans,
+        health_status=health_status,
+        loans=loans
+    )
