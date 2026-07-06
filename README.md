@@ -26,26 +26,18 @@ Based on this data, AI generates customized recommendations to help users reduce
 - User Registration
 - Secure Login & Authentication
 - User Dashboard
-- Profile Management
 
 ### 💳 Loan Management
 - Add Multiple Loans
 - Edit/Delete Loans
-- Track Outstanding Balance
-- EMI Monitoring
-- Interest Rate Tracking
 
 ### 📊 Financial Analysis
-- Monthly Income Analysis
-- Expense Tracking
-- Savings Analysis
 - Debt-to-Income Ratio Calculation
 - Financial Health Score
 
 ### 🤖 AI-Powered Features
 - Personalized Debt Analysis
 - AI Settlement Suggestions
-- Repayment Strategy Generation
 - Financial Risk Prediction
 - AI Recommendation Engine
 
