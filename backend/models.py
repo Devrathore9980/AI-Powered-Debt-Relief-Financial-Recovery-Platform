@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Text, DateTime
+from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -13,7 +14,6 @@ class User(Base):
 
     debt_records = relationship("DebtRecord", back_populates="owner")
 
-
 class DebtRecord(Base):
     __tablename__ = "debt_records"
 
@@ -22,6 +22,7 @@ class DebtRecord(Base):
     overdue_months = Column(Integer, nullable=False)
     debt_stress_level = Column(String, nullable=False)
     ai_strategy = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())   # 👈 naya
 
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="debt_records")

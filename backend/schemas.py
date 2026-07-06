@@ -51,3 +51,36 @@ class DashboardDataResponse(BaseModel):
     total_loans: int
     health_status: str
     loans: list[DebtRecordResponse]
+
+class NegotiationEmailRequest(BaseModel):
+    loan_amount: float
+    overdue_months: int
+    debt_stress_level: str
+    lender_name: str = "Lender"
+
+class NegotiationEmailResponse(BaseModel):
+    email_content: str
+
+    # Update Profile ke liye
+class UpdateProfileRequest(BaseModel):
+    name: str | None = None
+    password: str | None = None
+
+# Add Loan ke liye (user_email nahi chahiye - token se aayega)
+class AddLoanRequest(BaseModel):
+    loan_amount: float
+    overdue_months: int
+    debt_stress_level: str
+
+# AI History dikhane ke liye
+class AIHistoryItem(BaseModel):
+    loan_id: int
+    loan_amount: float
+    ai_strategy: str | None
+
+# Debt Timeline dikhane ke liye
+class DebtTimelineItem(BaseModel):
+    loan_id: int
+    loan_amount: float
+    overdue_months: int
+    created_at: str

@@ -43,3 +43,26 @@ def predict_settlement(loan_amount: float, overdue_months: int, debt_stress_leve
 
     response = model.generate_content(prompt)
     return response.text
+
+def generate_negotiation_email(loan_amount: float, overdue_months: int, debt_stress_level: str, lender_name: str = "Lender") -> str:
+    prompt = f"""
+    Tum ek professional debt negotiation writer ho. Neeche diye gaye details ke basis par,
+    ek polite, professional negotiation EMAIL likho jo borrower apne lender ko bhej sake.
+
+    Lender Name: {lender_name}
+    Loan Amount: ₹{loan_amount}
+    Overdue Months: {overdue_months}
+    Debt Stress Level: {debt_stress_level}
+
+    Email format follow karo:
+    - Subject line
+    - Polite greeting
+    - Situation explain karo (financial hardship)
+    - One-Time Settlement (OTS) ki request karo
+    - Professional closing
+
+    Poora email likho, ready to send.
+    """
+
+    response = model.generate_content(prompt)
+    return response.text
