@@ -15,7 +15,6 @@ function Dashboard({ userEmail, onLogout }) {
   const [predictionLoading, setPredictionLoading] = useState(false)
   const [predictionError, setPredictionError] = useState('')
 
-  // Naye states — Email Generator ke liye
   const [emailContent, setEmailContent] = useState('')
   const [emailLoading, setEmailLoading] = useState(false)
   const [emailError, setEmailError] = useState('')
@@ -24,21 +23,48 @@ function Dashboard({ userEmail, onLogout }) {
   const [dashboardData, setDashboardData] = useState(null)
   const [dashboardError, setDashboardError] = useState('')
 
+  // Naye states — AI History aur Debt Timeline ke liye
+  const [aiHistory, setAiHistory] = useState([])
+  const [historyError, setHistoryError] = useState('')
+  const [debtTimeline, setDebtTimeline] = useState([])
+  const [timelineError, setTimelineError] = useState('')
+  const [activeTab, setActiveTab] = useState('history')   // 'history' ya 'timeline'
+  const [expandedId, setExpandedId] = useState(null)       // kaunsa history item khula hai
+
   const token = localStorage.getItem('token')
+  const authHeader = { headers: { Authorization: `Bearer ${token}` } }
 
   const fetchDashboardData = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/dashboard-data', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await axios.get('http://127.0.0.1:8000/dashboard-data', authHeader)
       setDashboardData(response.data)
     } catch (err) {
       setDashboardError(err.response ? err.response.data.detail : 'Dashboard data load nahi hua')
     }
   }
 
+  const fetchAiHistory = async () => {
+    try {
+      const response = await axios.get('http://127.0.0.1:8000/ai-history', authHeader)
+      setAiHistory(response.data)
+    } catch (err) {
+      setHistoryError(err.response ? err.response.data.detail : 'AI history load nahi hui')
+    }
+  }
+
+  const fetchDebtTimeline = async () => {
+    try {
+      const response = await axios.get('http://127.0.0.1:8000/debt-timeline', authHeader)
+      setDebtTimeline(response.data)
+    } catch (err) {
+      setTimelineError(err.response ? err.response.data.detail : 'Debt timeline load nahi hui')
+    }
+  }
+
   useEffect(() => {
     fetchDashboardData()
+    fetchAiHistory()
+    fetchDebtTimeline()
   }, [])
 
   const handleSubmit = async (e) => {
@@ -56,7 +82,10 @@ function Dashboard({ userEmail, onLogout }) {
         language: language
       })
       setStrategy(response.data.ai_strategy)
+      // Naya loan add hone ke baad sab kuch refresh karo
       fetchDashboardData()
+      fetchAiHistory()
+      fetchDebtTimeline()
     } catch (err) {
       setError(err.response ? err.response.data.detail : 'Backend se connect nahi ho paya')
     } finally {
@@ -84,7 +113,6 @@ function Dashboard({ userEmail, onLogout }) {
     }
   }
 
-  // Naya function — Negotiation Email generate karne ke liye
   const handleGenerateEmail = async () => {
     setEmailLoading(true)
     setEmailError('')
@@ -111,6 +139,15 @@ function Dashboard({ userEmail, onLogout }) {
     navigator.clipboard.writeText(emailContent)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  // Date ko readable format mein dikhane ke liye (jaise "6 Jul 2026, 3:45 PM")
+  const formatDate = (dateString) => {
+    const date = new Date(dateString)
+    return date.toLocaleString('en-IN', {
+      day: 'numeric', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    })
   }
 
   return (
@@ -149,21 +186,11 @@ function Dashboard({ userEmail, onLogout }) {
         <form onSubmit={handleSubmit}>
           <div className="field">
             <label>Loan Amount (₹)</label>
-            <input
-              type="number"
-              value={loanAmount}
-              onChange={(e) => setLoanAmount(e.target.value)}
-              required
-            />
+            <input type="number" value={loanAmount} onChange={(e) => setLoanAmount(e.target.value)} required />
           </div>
           <div className="field">
             <label>Overdue Months</label>
-            <input
-              type="number"
-              value={overdueMonths}
-              onChange={(e) => setOverdueMonths(e.target.value)}
-              required
-            />
+            <input type="number" value={overdueMonths} onChange={(e) => setOverdueMonths(e.target.value)} required />
           </div>
           <div className="field">
             <label>Debt Stress Level</label>
@@ -175,12 +202,7 @@ function Dashboard({ userEmail, onLogout }) {
           </div>
           <div className="field">
             <label>Lender Name (email ke liye)</label>
-            <input
-              type="text"
-              placeholder="e.g. HDFC Bank, Bajaj Finserv"
-              value={lenderName}
-              onChange={(e) => setLenderName(e.target.value)}
-            />
+            <input type="text" placeholder="e.g. HDFC Bank, Bajaj Finserv" value={lenderName} onChange={(e) => setLenderName(e.target.value)} />
           </div>
           <div className="field">
             <label>AI Response Language</label>
@@ -195,22 +217,10 @@ function Dashboard({ userEmail, onLogout }) {
             <button className="btn-primary" type="submit" disabled={loading}>
               {loading ? 'Generating Strategy...' : 'Get Negotiation Strategy'}
             </button>
-
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={handleSettlementPredict}
-              disabled={predictionLoading || !loanAmount || !overdueMonths}
-            >
+            <button type="button" className="btn-secondary" onClick={handleSettlementPredict} disabled={predictionLoading || !loanAmount || !overdueMonths}>
               {predictionLoading ? 'Predicting...' : 'Get Settlement Prediction'}
             </button>
-
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={handleGenerateEmail}
-              disabled={emailLoading || !loanAmount || !overdueMonths}
-            >
+            <button type="button" className="btn-secondary" onClick={handleGenerateEmail} disabled={emailLoading || !loanAmount || !overdueMonths}>
               {emailLoading ? 'Writing Email...' : 'Generate Negotiation Email'}
             </button>
           </div>
@@ -259,6 +269,66 @@ function Dashboard({ userEmail, onLogout }) {
           ))}
         </div>
       )}
+
+      {/* ===== AI History / Debt Timeline Section (Tabs) ===== */}
+      <div className="card">
+        <div className="tab-row">
+          <button
+            type="button"
+            className={`tab-btn ${activeTab === 'history' ? 'tab-active' : ''}`}
+            onClick={() => setActiveTab('history')}
+          >
+            AI Strategy History
+          </button>
+          <button
+            type="button"
+            className={`tab-btn ${activeTab === 'timeline' ? 'tab-active' : ''}`}
+            onClick={() => setActiveTab('timeline')}
+          >
+            Debt Timeline
+          </button>
+        </div>
+
+        {activeTab === 'history' && (
+          <div className="tab-content">
+            {historyError && <p className="message error">{historyError}</p>}
+            {aiHistory.length === 0 && !historyError && (
+              <p className="empty-state">Abhi tak koi AI strategy generate nahi hui hai. Ek loan add karo upar!</p>
+            )}
+            {aiHistory.map((item) => (
+              <div key={item.loan_id} className="history-item">
+                <div className="history-item-header" onClick={() => setExpandedId(expandedId === item.loan_id ? null : item.loan_id)}>
+                  <span>Loan #{item.loan_id} — ₹{item.loan_amount}</span>
+                  <span className="expand-icon">{expandedId === item.loan_id ? '−' : '+'}</span>
+                </div>
+                {expandedId === item.loan_id && (
+                  <p className="history-strategy-text">{item.ai_strategy}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'timeline' && (
+          <div className="tab-content">
+            {timelineError && <p className="message error">{timelineError}</p>}
+            {debtTimeline.length === 0 && !timelineError && (
+              <p className="empty-state">Abhi tak timeline mein kuch nahi hai. Ek loan add karo upar!</p>
+            )}
+            <div className="timeline">
+              {debtTimeline.map((item) => (
+                <div key={item.loan_id} className="timeline-item">
+                  <div className="timeline-dot"></div>
+                  <div className="timeline-content">
+                    <p className="timeline-date">{formatDate(item.created_at)}</p>
+                    <p><strong>₹{item.loan_amount}</strong> loan added, {item.overdue_months} months overdue</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
