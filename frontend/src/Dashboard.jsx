@@ -5,6 +5,7 @@ function Dashboard({ userEmail, onLogout }) {
   const [loanAmount, setLoanAmount] = useState('')
   const [overdueMonths, setOverdueMonths] = useState('')
   const [stressLevel, setStressLevel] = useState('Medium')
+  const [language, setLanguage] = useState('English')
   const [strategy, setStrategy] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -20,7 +21,8 @@ function Dashboard({ userEmail, onLogout }) {
         user_email: userEmail,
         loan_amount: parseFloat(loanAmount),
         overdue_months: parseInt(overdueMonths),
-        debt_stress_level: stressLevel
+        debt_stress_level: stressLevel,
+        language: language
       })
       setStrategy(response.data.ai_strategy)
     } catch (err) {
@@ -64,6 +66,14 @@ function Dashboard({ userEmail, onLogout }) {
               <option value="Low">Low</option>
               <option value="Medium">Medium</option>
               <option value="High">High</option>
+            </select>
+          </div>
+          <div className="field">
+            <label>AI Response Language</label>
+            <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+              <option value="English">English</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Hinglish">Hinglish</option>
             </select>
           </div>
           <button className="btn-primary" type="submit" disabled={loading}>

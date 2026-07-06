@@ -116,7 +116,8 @@ def add_loan(
     strategy = generate_negotiation_strategy(
         loan_amount=loan.loan_amount,
         overdue_months=loan.overdue_months,
-        debt_stress_level=loan.debt_stress_level
+        debt_stress_level=loan.debt_stress_level,
+        language=loan.language                 # 👈 YE LINE ADD KARO
     )
 
     new_loan = DebtRecord(
@@ -141,7 +142,8 @@ def create_debt_record(record: DebtRecordCreate, db: Session = Depends(get_db)):
     strategy = generate_negotiation_strategy(
         loan_amount=record.loan_amount,
         overdue_months=record.overdue_months,
-        debt_stress_level=record.debt_stress_level
+        debt_stress_level=record.debt_stress_level,
+        language=record.language              # 👈 YE LINE ADD KARO
     )
 
     new_record = DebtRecord(
@@ -191,10 +193,10 @@ def negotiate(request: NegotiationRequest):
     strategy = generate_negotiation_strategy(
         loan_amount=request.loan_amount,
         overdue_months=request.overdue_months,
-        debt_stress_level=request.debt_stress_level
+        debt_stress_level=request.debt_stress_level,
+        language=request.language               # 👈 YE LINE ADD KARO
     )
     return {"strategy": strategy}
-
 
 @app.get("/ai-negotiation-strategy")
 def ai_negotiation_strategy(email: str = Depends(get_current_user_email), db: Session = Depends(get_db)):
@@ -225,10 +227,10 @@ def settlement_predictor(request: NegotiationRequest):
     prediction = predict_settlement(
         loan_amount=request.loan_amount,
         overdue_months=request.overdue_months,
-        debt_stress_level=request.debt_stress_level
+        debt_stress_level=request.debt_stress_level,
+        language=request.language               # 👈 YE LINE ADD KARO
     )
     return {"prediction": prediction}
-
 
 @app.post("/generate-negotiation-email", response_model=NegotiationEmailResponse)
 def negotiation_email(request: NegotiationEmailRequest):
@@ -236,10 +238,10 @@ def negotiation_email(request: NegotiationEmailRequest):
         loan_amount=request.loan_amount,
         overdue_months=request.overdue_months,
         debt_stress_level=request.debt_stress_level,
-        lender_name=request.lender_name
+        lender_name=request.lender_name,
+        language=request.language                # 👈 YE LINE ADD KARO
     )
     return {"email_content": email_content}
-
 
 @app.get("/generate-negotiation-email/{loan_id}", response_model=NegotiationEmailResponse)
 def negotiation_email_for_loan(
@@ -350,6 +352,7 @@ def debt_timeline(email: str = Depends(get_current_user_email), db: Session = De
         }
         for loan in loans
     ]
+
 
 
 

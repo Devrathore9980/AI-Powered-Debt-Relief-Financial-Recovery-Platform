@@ -84,3 +84,29 @@ class DebtTimelineItem(BaseModel):
     loan_amount: float
     overdue_months: int
     created_at: str
+
+class DebtRecordCreate(BaseModel):
+    user_email: EmailStr
+    loan_amount: float
+    overdue_months: int
+    debt_stress_level: str
+    language: str = "English"          # 👈 naya field, default English
+
+class AddLoanRequest(BaseModel):
+    loan_amount: float
+    overdue_months: int
+    debt_stress_level: str
+    language: str = "English"          # 👈 naya field
+
+class NegotiationRequest(BaseModel):
+    loan_amount: float
+    overdue_months: int
+    debt_stress_level: str
+    language: str = "English"          # 👈 naya field
+
+class NegotiationEmailRequest(BaseModel):
+    loan_amount: float
+    overdue_months: int
+    debt_stress_level: str
+    lender_name: str = "Lender"
+    language: str = "English"          # 👈 naya field
