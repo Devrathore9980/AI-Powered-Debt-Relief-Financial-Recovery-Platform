@@ -23,13 +23,23 @@ function Dashboard({ userEmail, onLogout }) {
   const [dashboardData, setDashboardData] = useState(null)
   const [dashboardError, setDashboardError] = useState('')
 
-  // Naye states — AI History aur Debt Timeline ke liye
   const [aiHistory, setAiHistory] = useState([])
   const [historyError, setHistoryError] = useState('')
   const [debtTimeline, setDebtTimeline] = useState([])
   const [timelineError, setTimelineError] = useState('')
-  const [activeTab, setActiveTab] = useState('history')   // 'history' ya 'timeline'
-  const [expandedId, setExpandedId] = useState(null)       // kaunsa history item khula hai
+  const [activeTab, setActiveTab] = useState('history')
+  const [expandedId, setExpandedId] = useState(null)
+
+  const [deletingId, setDeletingId] = useState(null)
+  const [deleteError, setDeleteError] = useState('')
+
+  // Profile Settings ke liye naye states
+  const [newName, setNewName] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [profileMsg, setProfileMsg] = useState('')
+  const [profileError, setProfileError] = useState('')
+  const [profileLoading, setProfileLoading] = useState(false)
+  const [showProfileForm, setShowProfileForm] = useState(false)
 
   const token = localStorage.getItem('token')
   const authHeader = { headers: { Authorization: `Bearer ${token}` } }
@@ -82,7 +92,6 @@ function Dashboard({ userEmail, onLogout }) {
         language: language
       })
       setStrategy(response.data.ai_strategy)
-      // Naya loan add hone ke baad sab kuch refresh karo
       fetchDashboardData()
       fetchAiHistory()
       fetchDebtTimeline()
@@ -141,7 +150,54 @@ function Dashboard({ userEmail, onLogout }) {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  // Date ko readable format mein dikhane ke liye (jaise "6 Jul 2026, 3:45 PM")
+  const handleDeleteLoan = async (loanId) => {
+    const confirmed = window.confirm('Kya tum sach mein is loan record ko delete karna chahte ho? Ye undo nahi ho sakta.')
+    if (!confirmed) return
+
+    setDeletingId(loanId)
+    setDeleteError('')
+
+    try {
+      await axios.delete(`http://127.0.0.1:8000/loans/${loanId}`, authHeader)
+      fetchDashboardData()
+      fetchAiHistory()
+      fetchDebtTimeline()
+    } catch (err) {
+      setDeleteError(err.response ? err.response.data.detail : 'Loan delete nahi ho paya')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  // Naya function — Profile Update ke liye
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault()
+    setProfileLoading(true)
+    setProfileMsg('')
+    setProfileError('')
+
+    const updates = {}
+    if (newName.trim()) updates.name = newName.trim()
+    if (newPassword.trim()) updates.password = newPassword.trim()
+
+    if (Object.keys(updates).length === 0) {
+      setProfileError('Kam se kam ek field bharo (Name ya Password)')
+      setProfileLoading(false)
+      return
+    }
+
+    try {
+      await axios.put('http://127.0.0.1:8000/update-profile', updates, authHeader)
+      setProfileMsg('Profile update ho gaya!')
+      setNewName('')
+      setNewPassword('')
+    } catch (err) {
+      setProfileError(err.response ? err.response.data.detail : 'Update nahi ho paya')
+    } finally {
+      setProfileLoading(false)
+    }
+  }
+
   const formatDate = (dateString) => {
     const date = new Date(dateString)
     return date.toLocaleString('en-IN', {
@@ -157,6 +213,42 @@ function Dashboard({ userEmail, onLogout }) {
         <button onClick={onLogout}>Logout</button>
       </div>
       <p>Welcome, {userEmail}</p>
+
+      {/* ===== Profile Settings Section ===== */}
+      <div className="card">
+        <div className="profile-toggle" onClick={() => setShowProfileForm(!showProfileForm)}>
+          <h3>Profile Settings</h3>
+          <span className="expand-icon">{showProfileForm ? '−' : '+'}</span>
+        </div>
+
+        {showProfileForm && (
+          <form onSubmit={handleUpdateProfile} className="profile-form">
+            <div className="field">
+              <label>New Name (optional)</label>
+              <input
+                type="text"
+                placeholder="Apna naya naam likho"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+              />
+            </div>
+            <div className="field">
+              <label>New Password (optional)</label>
+              <input
+                type="password"
+                placeholder="Naya password likho"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+            <button className="btn-primary" type="submit" disabled={profileLoading}>
+              {profileLoading ? 'Updating...' : 'Update Profile'}
+            </button>
+            {profileMsg && <p className="message success">{profileMsg}</p>}
+            {profileError && <p className="message error">{profileError}</p>}
+          </form>
+        )}
+      </div>
 
       {dashboardError && <p className="message error">{dashboardError}</p>}
 
@@ -260,31 +352,35 @@ function Dashboard({ userEmail, onLogout }) {
       {dashboardData && dashboardData.loans && dashboardData.loans.length > 0 && (
         <div className="card">
           <h3>Your Loans</h3>
+          {deleteError && <p className="message error">{deleteError}</p>}
           {dashboardData.loans.map((loan) => (
             <div key={loan.id} className="loan-item">
-              <p><strong>Loan Amount:</strong> ₹{loan.loan_amount}</p>
-              <p><strong>Overdue Months:</strong> {loan.overdue_months}</p>
-              <p><strong>Debt Stress Level:</strong> {loan.debt_stress_level}</p>
+              <div className="loan-item-row">
+                <div>
+                  <p><strong>Loan Amount:</strong> ₹{loan.loan_amount}</p>
+                  <p><strong>Overdue Months:</strong> {loan.overdue_months}</p>
+                  <p><strong>Debt Stress Level:</strong> {loan.debt_stress_level}</p>
+                </div>
+                <button
+                  type="button"
+                  className="btn-delete"
+                  onClick={() => handleDeleteLoan(loan.id)}
+                  disabled={deletingId === loan.id}
+                >
+                  {deletingId === loan.id ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* ===== AI History / Debt Timeline Section (Tabs) ===== */}
       <div className="card">
         <div className="tab-row">
-          <button
-            type="button"
-            className={`tab-btn ${activeTab === 'history' ? 'tab-active' : ''}`}
-            onClick={() => setActiveTab('history')}
-          >
+          <button type="button" className={`tab-btn ${activeTab === 'history' ? 'tab-active' : ''}`} onClick={() => setActiveTab('history')}>
             AI Strategy History
           </button>
-          <button
-            type="button"
-            className={`tab-btn ${activeTab === 'timeline' ? 'tab-active' : ''}`}
-            onClick={() => setActiveTab('timeline')}
-          >
+          <button type="button" className={`tab-btn ${activeTab === 'timeline' ? 'tab-active' : ''}`} onClick={() => setActiveTab('timeline')}>
             Debt Timeline
           </button>
         </div>

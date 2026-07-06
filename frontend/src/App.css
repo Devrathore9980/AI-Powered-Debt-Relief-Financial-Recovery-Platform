@@ -8,7 +8,6 @@
   --color-border: #DCE4E3;
   --color-error: #B3423E;
 
-  /* Naye — health status ke liye, palette ke saath harmonize karte hue */
   --color-good: #4C7A5E;
   --color-good-bg: #E6EFE9;
   --color-moderate: #A5751F;
@@ -146,6 +145,10 @@ h1 {
   color: var(--color-error);
 }
 
+.message.success {
+  color: var(--color-good);
+}
+
 .strategy-box {
   margin-top: 24px;
   text-align: left;
@@ -254,8 +257,6 @@ h1 {
   margin: 0;
 }
 
-/* ===== Dashboard Summary ===== */
-
 .summary-grid {
   display: flex;
   gap: 16px;
@@ -289,7 +290,6 @@ h1 {
   color: var(--color-primary-dark);
 }
 
-/* Health status — pill badge signature style */
 .status-good, .status-moderate, .status-critical {
   display: inline-block;
   padding: 4px 14px;
@@ -312,8 +312,6 @@ h1 {
   background: var(--color-critical-bg);
 }
 
-/* ===== Loans List ===== */
-
 .loan-item {
   padding: 16px;
   border: 1px solid var(--color-border);
@@ -326,7 +324,36 @@ h1 {
   font-size: 0.9rem;
 }
 
-/* ===== Action Buttons Row ===== */
+.loan-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.btn-delete {
+  background: var(--color-white);
+  color: var(--color-error);
+  border: 1.5px solid var(--color-error);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.btn-delete:hover:not(:disabled) {
+  background: var(--color-error);
+  color: var(--color-white);
+}
+
+.btn-delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .button-row {
   display: flex;
@@ -366,8 +393,6 @@ h1 {
   cursor: not-allowed;
 }
 
-/* ===== Prediction & Email Boxes ===== */
-
 .prediction-box {
   border-left-color: var(--color-accent);
 }
@@ -405,8 +430,6 @@ h1 {
 .btn-copy:hover {
   background: var(--color-primary-dark);
 }
-
-/* ===== Tabs ===== */
 
 .tab-row {
   display: flex;
@@ -448,8 +471,6 @@ h1 {
   text-align: center;
 }
 
-/* ===== AI History (accordion) ===== */
-
 .history-item {
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -482,8 +503,6 @@ h1 {
   white-space: pre-wrap;
   border-top: 1px solid var(--color-border);
 }
-
-/* ===== Debt Timeline ===== */
 
 .timeline {
   position: relative;
@@ -522,4 +541,19 @@ h1 {
 .timeline-content p {
   margin: 2px 0;
   font-size: 0.9rem;
+}
+
+.profile-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.profile-toggle h3 {
+  margin: 0;
+}
+
+.profile-form {
+  margin-top: 16px;
 }
