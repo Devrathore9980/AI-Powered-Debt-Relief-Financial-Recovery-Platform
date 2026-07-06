@@ -232,3 +232,41 @@ h1 {
   font-size: 0.9rem;
   margin: 0;
 }
+
+
+.summary-grid {
+  display: flex;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.summary-item {
+  flex: 1;
+  text-align: center;
+  padding: 15px;
+  background: #f4f4f4;
+  border-radius: 8px;
+}
+
+.summary-label {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.summary-value {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.status-good { color: green; }
+.status-moderate { color: orange; }
+.status-critical { color: red; }
+
+.loan-item {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+.loan-item:last-child {
+  border-bottom: none;
+}

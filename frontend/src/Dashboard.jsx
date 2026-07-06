@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 
 function Dashboard({ userEmail, onLogout }) {
@@ -9,6 +9,29 @@ function Dashboard({ userEmail, onLogout }) {
   const [strategy, setStrategy] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Naya state — dashboard summary aur loans list ke liye
+  const [dashboardData, setDashboardData] = useState(null)
+  const [dashboardError, setDashboardError] = useState('')
+
+  const token = localStorage.getItem('token')
+
+  // Dashboard data fetch karne wala function
+  const fetchDashboardData = async () => {
+    try {
+      const response = await axios.get('http://127.0.0.1:8000/dashboard-data', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setDashboardData(response.data)
+    } catch (err) {
+      setDashboardError(err.response ? err.response.data.detail : 'Dashboard data load nahi hua')
+    }
+  }
+
+  // Component load hote hi ek baar dashboard data fetch karo
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -25,6 +48,9 @@ function Dashboard({ userEmail, onLogout }) {
         language: language
       })
       setStrategy(response.data.ai_strategy)
+
+      // Naya loan add hone ke baad dashboard data refresh karo
+      fetchDashboardData()
     } catch (err) {
       setError(err.response ? err.response.data.detail : 'Backend se connect nahi ho paya')
     } finally {
@@ -32,7 +58,7 @@ function Dashboard({ userEmail, onLogout }) {
     }
   }
 
- return (
+  return (
     <div className="Dashboard">
       <div className="top-bar">
         <h1>FinRelief AI</h1>
@@ -40,6 +66,32 @@ function Dashboard({ userEmail, onLogout }) {
       </div>
       <p>Welcome, {userEmail}</p>
 
+      {/* ===== Summary Section ===== */}
+      {dashboardError && <p className="message error">{dashboardError}</p>}
+
+      {dashboardData && (
+        <div className="card">
+          <h3>Your Financial Summary</h3>
+          <div className="summary-grid">
+            <div className="summary-item">
+              <p className="summary-label">Total Debt</p>
+              <p className="summary-value">₹{dashboardData.total_debt}</p>
+            </div>
+            <div className="summary-item">
+              <p className="summary-label">Total Loans</p>
+              <p className="summary-value">{dashboardData.total_loans}</p>
+            </div>
+            <div className="summary-item">
+              <p className="summary-label">Health Status</p>
+              <p className={`summary-value status-${dashboardData.health_status.toLowerCase()}`}>
+                {dashboardData.health_status}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== Add Loan Form ===== */}
       <div className="card">
         <form onSubmit={handleSubmit}>
           <div className="field">
@@ -90,6 +142,20 @@ function Dashboard({ userEmail, onLogout }) {
           </div>
         )}
       </div>
+
+      {/* ===== Loans List Section ===== */}
+      {dashboardData && dashboardData.loans && dashboardData.loans.length > 0 && (
+        <div className="card">
+          <h3>Your Loans</h3>
+          {dashboardData.loans.map((loan) => (
+            <div key={loan.id} className="loan-item">
+              <p><strong>Loan Amount:</strong> ₹{loan.loan_amount}</p>
+              <p><strong>Overdue Months:</strong> {loan.overdue_months}</p>
+              <p><strong>Debt Stress Level:</strong> {loan.debt_stress_level}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
