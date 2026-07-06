@@ -2,9 +2,9 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import engine, Base, SessionLocal
 from models import User, DebtRecord
-from schemas import UserCreate, UserResponse, NegotiationRequest, DebtRecordCreate, DebtRecordResponse, FinancialHealthResponse
+from schemas import UserCreate, UserResponse, NegotiationRequest, DebtRecordCreate, DebtRecordResponse, FinancialHealthResponse, SettlementPredictionResponse
 from auth import hash_password, verify_password, create_access_token
-from ai_engine import generate_negotiation_strategy
+from ai_engine import generate_negotiation_strategy, predict_settlement
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -144,3 +144,11 @@ def financial_health(email: str, db: Session = Depends(get_db)):
         average_overdue_months=round(average_overdue, 1),
         health_status=status
     )
+@app.post("/settlement-predictor", response_model=SettlementPredictionResponse)
+def settlement_predictor(request: NegotiationRequest):
+    prediction = predict_settlement(
+        loan_amount=request.loan_amount,
+        overdue_months=request.overdue_months,
+        debt_stress_level=request.debt_stress_level
+    )
+    return {"prediction": prediction}

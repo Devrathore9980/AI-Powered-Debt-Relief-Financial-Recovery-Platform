@@ -40,3 +40,6 @@ class FinancialHealthResponse(BaseModel):
     total_loans: int
     average_overdue_months: float
     health_status: str
+
+class SettlementPredictionResponse(BaseModel):
+    prediction: str

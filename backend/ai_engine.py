@@ -25,3 +25,21 @@ def generate_negotiation_strategy(loan_amount: float, overdue_months: int, debt_
 
     response = model.generate_content(prompt)
     return response.text
+
+def predict_settlement(loan_amount: float, overdue_months: int, debt_stress_level: str) -> str:
+    prompt = f"""
+    Tum ek settlement prediction expert ho. Neeche diye gaye loan details dekhkar,
+    ek REALISTIC settlement estimate do.
+
+    Loan Amount: ₹{loan_amount}
+    Overdue Months: {overdue_months}
+    Debt Stress Level: {debt_stress_level}
+
+    Sirf yeh 3 cheezein do, bilkul short aur clear:
+    1. Estimated Settlement Percentage (jaise "30-40%")
+    2. Estimated Settlement Amount (₹ me range)
+    3. Ek line ka reasoning (kyun yeh estimate diya)
+    """
+
+    response = model.generate_content(prompt)
+    return response.text
