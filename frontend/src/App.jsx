@@ -2,7 +2,7 @@ import { useState } from 'react'
 import axios from 'axios'
 import Dashboard from './Dashboard'
 import './App.css'
-import Landing from './Landing'
+import Landing from './landing'
 
 function App() {
   const [isLogin, setIsLogin] = useState(false)
@@ -17,7 +17,7 @@ function App() {
   const handleRegister = async (e) => {
     e.preventDefault()
     try {
-      const response = await axios.post('http://127.0.0.1:8000/register', {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/register`, {
         name, email, password
       })
       setMessage(`Success! User registered with ID: ${response.data.id}`)
@@ -30,7 +30,7 @@ function App() {
     e.preventDefault()
     try {
       const response = await axios.post(
-        `http://127.0.0.1:8000/login?email=${email}&password=${password}`
+        `${import.meta.env.VITE_API_URL}/login?email=${email}&password=${password}`
       )
       localStorage.setItem('token', response.data.access_token)
       localStorage.setItem('userEmail', email)
@@ -48,11 +48,7 @@ function App() {
     setPassword('')
   }
 
-  if (isLoggedIn) {
-    return <Dashboard userEmail={localStorage.getItem('userEmail')} onLogout={handleLogout} />
-  }
-
-  if (isLoggedIn) {
+   if (isLoggedIn) {
   return <Dashboard userEmail={localStorage.getItem('userEmail')} onLogout={handleLogout} />
 }
 

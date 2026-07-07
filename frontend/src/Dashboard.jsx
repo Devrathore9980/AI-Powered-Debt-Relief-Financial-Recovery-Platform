@@ -61,28 +61,28 @@ function Dashboard({ userEmail, onLogout }) {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/dashboard-data', authHeader)
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/dashboard-data`, authHeader)
       setDashboardData(response.data)
     } catch (err) {
-      setDashboardError(err.response ? err.response.data.detail : 'Dashboard data load nahi hua')
+      setDashboardError(err.response ? err.response.data.detail : 'Dashboard data cannot be loaded')
     }
   }
 
   const fetchAiHistory = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/ai-history', authHeader)
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/ai-history`, authHeader)
       setAiHistory(response.data)
     } catch (err) {
-      setHistoryError(err.response ? err.response.data.detail : 'AI history load nahi hui')
+      setHistoryError(err.response ? err.response.data.detail : 'AI history cannot be loaded')
     }
   }
 
   const fetchDebtTimeline = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/debt-timeline', authHeader)
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/debt-timeline`, authHeader)
       setDebtTimeline(response.data)
     } catch (err) {
-      setTimelineError(err.response ? err.response.data.detail : 'Debt timeline load nahi hui')
+      setTimelineError(err.response ? err.response.data.detail : 'Debt timeline cannot be loaded')
     }
   }
 
@@ -98,7 +98,7 @@ function Dashboard({ userEmail, onLogout }) {
     setError('')
     setStrategy('')
     try {
-      const response = await axios.post('http://127.0.0.1:8000/debt-record', {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/debt-record`, {
         user_email: userEmail,
         loan_amount: parseFloat(loanAmount),
         overdue_months: parseInt(overdueMonths),
@@ -110,7 +110,7 @@ function Dashboard({ userEmail, onLogout }) {
       fetchAiHistory()
       fetchDebtTimeline()
     } catch (err) {
-      setError(err.response ? err.response.data.detail : 'Backend se connect nahi ho paya')
+      setError(err.response ? err.response.data.detail : 'Unable to connect with backend')
     } finally {
       setLoading(false)
     }
@@ -121,7 +121,7 @@ function Dashboard({ userEmail, onLogout }) {
     setPredictionError('')
     setPrediction('')
     try {
-      const response = await axios.post('http://127.0.0.1:8000/settlement-predictor', {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/settlement-predictor`, {
         loan_amount: parseFloat(loanAmount),
         overdue_months: parseInt(overdueMonths),
         debt_stress_level: stressLevel,
@@ -129,7 +129,7 @@ function Dashboard({ userEmail, onLogout }) {
       })
       setPrediction(response.data.prediction)
     } catch (err) {
-      setPredictionError(err.response ? err.response.data.detail : 'Backend se connect nahi ho paya')
+      setPredictionError(err.response ? err.response.data.detail : 'Unable to connect with backend')
     } finally {
       setPredictionLoading(false)
     }
@@ -141,7 +141,7 @@ function Dashboard({ userEmail, onLogout }) {
     setEmailContent('')
     setCopied(false)
     try {
-      const response = await axios.post('http://127.0.0.1:8000/generate-negotiation-email', {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/generate-negotiation-email`, {
         loan_amount: parseFloat(loanAmount),
         overdue_months: parseInt(overdueMonths),
         debt_stress_level: stressLevel,
@@ -150,7 +150,7 @@ function Dashboard({ userEmail, onLogout }) {
       })
       setEmailContent(response.data.email_content)
     } catch (err) {
-      setEmailError(err.response ? err.response.data.detail : 'Backend se connect nahi ho paya')
+      setEmailError(err.response ? err.response.data.detail : 'Unable to connect with backend')
     } finally {
       setEmailLoading(false)
     }
@@ -163,17 +163,17 @@ function Dashboard({ userEmail, onLogout }) {
   }
 
   const handleDeleteLoan = async (loanId) => {
-    const confirmed = window.confirm('Kya tum sach mein is loan record ko delete karna chahte ho? Ye undo nahi ho sakta.')
+    const confirmed = window.confirm('Are you sure you want to delete this loan record? This action cannot be undone.')
     if (!confirmed) return
     setDeletingId(loanId)
     setDeleteError('')
     try {
-      await axios.delete(`http://127.0.0.1:8000/loans/${loanId}`, authHeader)
+      await axios.delete(`${import.meta.env.VITE_API_URL}/loans/${loanId}`,  authHeader)
       fetchDashboardData()
       fetchAiHistory()
       fetchDebtTimeline()
     } catch (err) {
-      setDeleteError(err.response ? err.response.data.detail : 'Loan delete nahi ho paya')
+      setDeleteError(err.response ? err.response.data.detail : 'Failed to delete the loan')
     } finally {
       setDeletingId(null)
     }
@@ -188,17 +188,17 @@ function Dashboard({ userEmail, onLogout }) {
     if (newName.trim()) updates.name = newName.trim()
     if (newPassword.trim()) updates.password = newPassword.trim()
     if (Object.keys(updates).length === 0) {
-      setProfileError('Kam se kam ek field bharo (Name ya Password)')
+      setProfileError('Fill at least one field (Name or Password)')
       setProfileLoading(false)
       return
     }
     try {
-      await axios.put('http://127.0.0.1:8000/update-profile', updates, authHeader)
+      await axios.put(`${import.meta.env.VITE_API_URL}/update-profile`,  updates, authHeader)
       setProfileMsg('Profile update ho gaya!')
       setNewName('')
       setNewPassword('')
     } catch (err) {
-      setProfileError(err.response ? err.response.data.detail : 'Update nahi ho paya')
+      setProfileError(err.response ? err.response.data.detail : 'Failed to update profile')
     } finally {
       setProfileLoading(false)
     }
@@ -246,7 +246,7 @@ function Dashboard({ userEmail, onLogout }) {
           ? 'Ek structured negotiation strategy isse improve kar sakti hai.'
           : 'Repayment discipline achhi lag rahi hai, aise hi jaari rakho.'
       }`
-    : 'Apna pehla loan add karo, AI insights yahan dikhengi.'
+    : 'Add your first loan to see AI insights here.'
 
   return (
     <div className="dashboard-page">
