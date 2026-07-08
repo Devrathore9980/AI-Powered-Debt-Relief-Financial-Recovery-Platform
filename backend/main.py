@@ -6,7 +6,8 @@ from schemas import (
     UserCreate, UserResponse, NegotiationRequest, DebtRecordCreate, DebtRecordResponse,
     FinancialHealthResponse, SettlementPredictionResponse, DashboardDataResponse,
     NegotiationEmailRequest, NegotiationEmailResponse,
-    UpdateProfileRequest, AddLoanRequest, AIHistoryItem, DebtTimelineItem
+    UpdateProfileRequest, AddLoanRequest, AIHistoryItem, DebtTimelineItem,
+    ForgotPasswordRequest
 )
 from auth import hash_password, verify_password, create_access_token, get_current_user_email
 from ai_engine import generate_negotiation_strategy, predict_settlement, generate_negotiation_email
