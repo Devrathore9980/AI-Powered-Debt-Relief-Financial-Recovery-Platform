@@ -117,3 +117,38 @@ class ForgotPasswordRequest(BaseModel):
     email: EmailStr
     security_answer: str
     new_password: str
+
+class FinancialProfileRequest(BaseModel):
+    monthly_income: float
+    monthly_expenses: float
+    existing_debts: float
+
+class FinancialProfileResponse(BaseModel):
+    monthly_income: float
+    monthly_expenses: float
+    existing_debts: float
+    financial_health_score: float
+
+    class Config:
+        from_attributes = True
+
+class SettlementRecordResponse(BaseModel):
+    id: int
+    loan_id: int
+    settlement_prediction: str
+    recommended_amount: float | None
+    priority_level: str | None
+    created_at: str
+
+    class Config:
+        from_attributes = True
+
+class AIHistoryRecordResponse(BaseModel):
+    id: int
+    negotiation_strategy: str | None
+    settlement_letter: str | None
+    ai_response: str | None
+    generated_at: str
+
+    class Config:
+        from_attributes = True

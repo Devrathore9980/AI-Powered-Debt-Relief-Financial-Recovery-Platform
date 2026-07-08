@@ -1,13 +1,14 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import engine, Base, SessionLocal
-from models import User, DebtRecord
+from models import User, DebtRecord, FinancialProfile, SettlementRecord, AIHistoryRecord
 from schemas import (
     UserCreate, UserResponse, NegotiationRequest, DebtRecordCreate, DebtRecordResponse,
     FinancialHealthResponse, SettlementPredictionResponse, DashboardDataResponse,
     NegotiationEmailRequest, NegotiationEmailResponse,
     UpdateProfileRequest, AddLoanRequest, AIHistoryItem, DebtTimelineItem,
-    ForgotPasswordRequest
+    ForgotPasswordRequest, FinancialProfileRequest, FinancialProfileResponse,
+    SettlementRecordResponse, AIHistoryRecordResponse
 )
 from auth import hash_password, verify_password, create_access_token, get_current_user_email
 from ai_engine import generate_negotiation_strategy, predict_settlement, generate_negotiation_email
@@ -166,6 +167,12 @@ def add_loan(
     db.add(new_loan)
     db.commit()
     db.refresh(new_loan)
+    ai_history_entry = AIHistoryRecord(
+        negotiation_strategy=strategy,
+        owner_id=user.id
+    )
+    db.add(ai_history_entry)
+    db.commit()
     return new_loan
 
 
@@ -247,14 +254,22 @@ def ai_negotiation_strategy(email: str = Depends(get_current_user_email), db: Se
     return {"loan_id": latest_loan.id, "strategy": latest_loan.ai_strategy}
 
 
-@app.get("/ai-history", response_model=list[AIHistoryItem])
+@app.get("/ai-history", response_model=list[AIHistoryRecordResponse])
 def ai_history(email: str = Depends(get_current_user_email), db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == email).first()
-    loans = db.query(DebtRecord).filter(DebtRecord.owner_id == user.id).all()
+    records = db.query(AIHistoryRecord).filter(
+        AIHistoryRecord.owner_id == user.id
+    ).order_by(AIHistoryRecord.generated_at.desc()).all()
 
     return [
-        {"loan_id": loan.id, "loan_amount": loan.loan_amount, "ai_strategy": loan.ai_strategy}
-        for loan in loans
+        {
+            "id": r.id,
+            "negotiation_strategy": r.negotiation_strategy,
+            "settlement_letter": r.settlement_letter,
+            "ai_response": r.ai_response,
+            "generated_at": str(r.generated_at)
+        }
+        for r in records
     ]
 
 
@@ -298,6 +313,13 @@ def negotiation_email_for_loan(
         debt_stress_level=loan.debt_stress_level,
         lender_name="Lender"
     )
+
+    ai_history_entry = AIHistoryRecord(
+        settlement_letter=email_content,
+        owner_id=user.id
+    )
+    db.add(ai_history_entry)
+    db.commit()
     return {"email_content": email_content}
 
 
@@ -391,4 +413,106 @@ def debt_timeline(email: str = Depends(get_current_user_email), db: Session = De
 
 
 
+# FINANCIAL PROFILE
+
+
+@app.post("/financial-profile", response_model=FinancialProfileResponse)
+def create_or_update_financial_profile(
+    profile: FinancialProfileRequest,
+    email: str = Depends(get_current_user_email),
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User nahi mila")
+
+    surplus = profile.monthly_income - profile.monthly_expenses
+    if profile.monthly_income > 0:
+        score = max(0, min(100, (surplus / profile.monthly_income) * 100))
+    else:
+        score = 0
+
+    existing = db.query(FinancialProfile).filter(FinancialProfile.owner_id == user.id).first()
+    if existing:
+        existing.monthly_income = profile.monthly_income
+        existing.monthly_expenses = profile.monthly_expenses
+        existing.existing_debts = profile.existing_debts
+        existing.financial_health_score = score
+        db.commit()
+        db.refresh(existing)
+        return existing
+    else:
+        new_profile = FinancialProfile(
+            monthly_income=profile.monthly_income,
+            monthly_expenses=profile.monthly_expenses,
+            existing_debts=profile.existing_debts,
+            financial_health_score=score,
+            owner_id=user.id
+        )
+        db.add(new_profile)
+        db.commit()
+        db.refresh(new_profile)
+        return new_profile
+
+
+@app.get("/financial-profile", response_model=FinancialProfileResponse)
+def get_financial_profile(email: str = Depends(get_current_user_email), db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == email).first()
+    profile = db.query(FinancialProfile).filter(FinancialProfile.owner_id == user.id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Financial profile abhi tak nahi bana")
+    return profile
+
+
+
+# SETTLEMENT RECORDS (saved history)
+
+
+@app.post("/loans/{loan_id}/settlement-record", response_model=SettlementRecordResponse)
+def create_settlement_record(
+    loan_id: int,
+    email: str = Depends(get_current_user_email),
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.email == email).first()
+    loan = db.query(DebtRecord).filter(
+        DebtRecord.id == loan_id, DebtRecord.owner_id == user.id
+    ).first()
+    if not loan:
+        raise HTTPException(status_code=404, detail="Loan nahi mila")
+
+    prediction_text = predict_settlement(
+        loan_amount=loan.loan_amount,
+        overdue_months=loan.overdue_months,
+        debt_stress_level=loan.debt_stress_level,
+        language="English"
+    )
+
+    if loan.overdue_months > 6:
+        priority = "High"
+    elif loan.overdue_months > 2:
+        priority = "Medium"
+    else:
+        priority = "Low"
+
+    record = SettlementRecord(
+        settlement_prediction=prediction_text,
+        recommended_amount=None,
+        priority_level=priority,
+        owner_id=user.id,
+        loan_id=loan.id
+    )
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+    return record
+
+
+@app.get("/settlement-history", response_model=list[SettlementRecordResponse])
+def get_settlement_history(email: str = Depends(get_current_user_email), db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == email).first()
+    records = db.query(SettlementRecord).filter(
+        SettlementRecord.owner_id == user.id
+    ).order_by(SettlementRecord.created_at.desc()).all()
+    return records
 
