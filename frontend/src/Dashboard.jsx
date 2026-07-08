@@ -43,6 +43,8 @@ function Dashboard({ userEmail, onLogout }) {
   const [profileError, setProfileError] = useState('')
   const [profileLoading, setProfileLoading] = useState(false)
   const [showProfileForm, setShowProfileForm] = useState(false)
+  const [deletingAccount, setDeletingAccount] = useState(false)
+  const [deleteAccountError, setDeleteAccountError] = useState('')
 
   // Naya — Theme toggle
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark')
@@ -178,6 +180,21 @@ function Dashboard({ userEmail, onLogout }) {
       setDeletingId(null)
     }
   }
+
+  const handleDeleteAccount = async () => {
+  const confirmed = window.confirm('Kya aap sach me apna account PERMANENTLY delete karna chahte ho? Saare loans bhi delete ho jayenge, ye wapas nahi ho sakta.')
+  if (!confirmed) return
+  setDeletingAccount(true)
+  setDeleteAccountError('')
+  try {
+    await axios.delete(`${import.meta.env.VITE_API_URL}/delete-account`, authHeader)
+    onLogout()
+  } catch (err) {
+    setDeleteAccountError(err.response ? err.response.data.detail : 'Account delete nahi ho paya')
+  } finally {
+    setDeletingAccount(false)
+  }
+}
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault()
@@ -364,11 +381,11 @@ function Dashboard({ userEmail, onLogout }) {
             <form onSubmit={handleUpdateProfile} className="profile-form">
               <div className="field">
                 <label>New Name (optional)</label>
-                <input type="text" placeholder="Apna naya naam likho" value={newName} onChange={(e) => setNewName(e.target.value)} />
+                <input type="text" placeholder="Type your new name" value={newName} onChange={(e) => setNewName(e.target.value)} />
               </div>
               <div className="field">
                 <label>New Password (optional)</label>
-                <input type="password" placeholder="Naya password likho" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                <input type="password" placeholder="Type new passward" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
               </div>
               <button className="btn-primary" type="submit" disabled={profileLoading}>
                 {profileLoading ? 'Updating...' : 'Update Profile'}
@@ -379,6 +396,23 @@ function Dashboard({ userEmail, onLogout }) {
           )}
         </div>
 
+        {/* ===== Danger Zone ===== */}
+        <div className="card" style={{ borderColor: '#c0392b' }}>
+          <h3 style={{ color: '#c0392b' }}>Danger Zone</h3>
+          <p>Delete your account permanently. All your loans and associated data will be permanently deleted and cannot be recovered.</p>
+          <button
+            type="button"
+            className="btn-delete"
+            onClick={handleDeleteAccount}
+            disabled={deletingAccount}
+          >
+            {deletingAccount ? 'Deleting Account...' : 'Delete My Account'}
+          </button>
+          {deleteAccountError && <p className="message error">{deleteAccountError}</p>}
+        </div>
+
+
+        
 
         {/* ===== Add Loan Form ===== */}
 
