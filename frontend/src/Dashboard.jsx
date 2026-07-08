@@ -221,7 +221,10 @@ function Dashboard({ userEmail, onLogout }) {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
   }
 
+
   // ===== Chart data (real, computed from actual loans) =====
+
+
   let runningTotal = 0
   const timelineChartData = debtTimeline.map((item) => {
     runningTotal += item.loan_amount
@@ -284,7 +287,10 @@ function Dashboard({ userEmail, onLogout }) {
 
         {dashboardError && <p className="message error">{dashboardError}</p>}
 
+
         {/* ===== Stat Cards ===== */}
+
+
         {dashboardData && (
           <div className="stat-grid">
             <div className="stat-card stat-teal">
@@ -310,7 +316,10 @@ function Dashboard({ userEmail, onLogout }) {
           </div>
         )}
 
+
         {/* ===== Charts ===== */}
+
+
         {dashboardData && dashboardData.loans && dashboardData.loans.length > 0 && (
           <div className="chart-grid">
             <div className="chart-card">
@@ -370,7 +379,10 @@ function Dashboard({ userEmail, onLogout }) {
           )}
         </div>
 
+
         {/* ===== Add Loan Form ===== */}
+
+
         <div className="card">
           <form onSubmit={handleSubmit}>
             <div className="field">
@@ -443,7 +455,10 @@ function Dashboard({ userEmail, onLogout }) {
           )}
         </div>
 
+
         {/* ===== Loans List ===== */}
+
+
         {dashboardData && dashboardData.loans && dashboardData.loans.length > 0 && (
           <div className="card" id="loans-section">
             <h3>Your Loans</h3>
@@ -465,7 +480,10 @@ function Dashboard({ userEmail, onLogout }) {
           </div>
         )}
 
+
         {/* ===== History / Timeline Tabs ===== */}
+
+
         <div className="card" id="history-section">
           <div className="tab-row">
             <button type="button" className={`tab-btn ${activeTab === 'history' ? 'tab-active' : ''}`} onClick={() => setActiveTab('history')}>
