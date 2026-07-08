@@ -42,9 +42,9 @@ def read_root():
     return {"message": "FinRelief AI backend zinda hai!"}
 
 
-# ======================================================
+
 # AUTH & PROFILE
-# ======================================================
+
 
 @app.post("/register", response_model=UserResponse)
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -55,7 +55,9 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     new_user = User(
         name=user.name,
         email=user.email,
-        hashed_password=hash_password(user.password)
+        hashed_password=hash_password(user.password),
+        security_question=user.security_question,          
+        security_answer=user.security_answer.strip().lower() 
     )
     db.add(new_user)
     db.commit()
@@ -73,6 +75,18 @@ def login_user(email: str, password: str, db: Session = Depends(get_db)):
     access_token = create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"}
 
+@app.post("/forgot-password")
+def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == request.email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Yeh email registered nahi hai")
+
+    if not user.security_answer or user.security_answer.strip().lower() != request.security_answer.strip().lower():
+        raise HTTPException(status_code=400, detail="Security answer galat hai")
+
+    user.hashed_password = hash_password(request.new_password)
+    db.commit()
+    return {"message": "Password successfully reset ho gaya! Ab naya password se login karo"}
 
 @app.get("/debug_user")
 def debug_user(email: str = Depends(get_current_user_email), db: Session = Depends(get_db)):
@@ -102,9 +116,9 @@ def update_profile(
     return user
 
 
-# ======================================================
+
 # LOANS
-# ======================================================
+
 
 @app.post("/add-loan", response_model=DebtRecordResponse)
 def add_loan(
@@ -120,7 +134,7 @@ def add_loan(
         loan_amount=loan.loan_amount,
         overdue_months=loan.overdue_months,
         debt_stress_level=loan.debt_stress_level,
-        language=loan.language                 # 👈 YE LINE ADD KARO
+        language=loan.language                 
     )
 
     new_loan = DebtRecord(
@@ -146,7 +160,7 @@ def create_debt_record(record: DebtRecordCreate, db: Session = Depends(get_db)):
         loan_amount=record.loan_amount,
         overdue_months=record.overdue_months,
         debt_stress_level=record.debt_stress_level,
-        language=record.language              # 👈 YE LINE ADD KARO
+        language=record.language              
     )
 
     new_record = DebtRecord(
@@ -187,9 +201,9 @@ def delete_loan(
     return {"message": "Loan record delete ho gaya"}
 
 
-# ======================================================
+
 # AI FEATURES (negotiation, settlement, email)
-# ======================================================
+
 
 @app.post("/negotiate")
 def negotiate(request: NegotiationRequest):
@@ -197,7 +211,7 @@ def negotiate(request: NegotiationRequest):
         loan_amount=request.loan_amount,
         overdue_months=request.overdue_months,
         debt_stress_level=request.debt_stress_level,
-        language=request.language               # 👈 YE LINE ADD KARO
+        language=request.language               
     )
     return {"strategy": strategy}
 
@@ -231,7 +245,7 @@ def settlement_predictor(request: NegotiationRequest):
         loan_amount=request.loan_amount,
         overdue_months=request.overdue_months,
         debt_stress_level=request.debt_stress_level,
-        language=request.language               # 👈 YE LINE ADD KARO
+        language=request.language               
     )
     return {"prediction": prediction}
 
@@ -242,7 +256,7 @@ def negotiation_email(request: NegotiationEmailRequest):
         overdue_months=request.overdue_months,
         debt_stress_level=request.debt_stress_level,
         lender_name=request.lender_name,
-        language=request.language                # 👈 YE LINE ADD KARO
+        language=request.language                
     )
     return {"email_content": email_content}
 
@@ -268,9 +282,9 @@ def negotiation_email_for_loan(
     return {"email_content": email_content}
 
 
-# ======================================================
+
 # DASHBOARD & ANALYTICS
-# ======================================================
+
 
 @app.get("/financial-health", response_model=FinancialHealthResponse)
 def financial_health(email: str = Depends(get_current_user_email), db: Session = Depends(get_db)):

@@ -4,6 +4,8 @@ class UserCreate(BaseModel):
     name: str
     email: EmailStr
     password: str
+    security_question: str      
+    security_answer: str        
 
 class UserResponse(BaseModel):
     id: int
@@ -61,24 +63,24 @@ class NegotiationEmailRequest(BaseModel):
 class NegotiationEmailResponse(BaseModel):
     email_content: str
 
-    # Update Profile ke liye
+    
 class UpdateProfileRequest(BaseModel):
     name: str | None = None
     password: str | None = None
 
-# Add Loan ke liye (user_email nahi chahiye - token se aayega)
+
 class AddLoanRequest(BaseModel):
     loan_amount: float
     overdue_months: int
     debt_stress_level: str
 
-# AI History dikhane ke liye
+
 class AIHistoryItem(BaseModel):
     loan_id: int
     loan_amount: float
     ai_strategy: str | None
 
-# Debt Timeline dikhane ke liye
+
 class DebtTimelineItem(BaseModel):
     loan_id: int
     loan_amount: float
@@ -90,23 +92,28 @@ class DebtRecordCreate(BaseModel):
     loan_amount: float
     overdue_months: int
     debt_stress_level: str
-    language: str = "English"          # 👈 naya field, default English
+    language: str = "English"          
 
 class AddLoanRequest(BaseModel):
     loan_amount: float
     overdue_months: int
     debt_stress_level: str
-    language: str = "English"          # 👈 naya field
+    language: str = "English"          
 
 class NegotiationRequest(BaseModel):
     loan_amount: float
     overdue_months: int
     debt_stress_level: str
-    language: str = "English"          # 👈 naya field
+    language: str = "English"          
 
 class NegotiationEmailRequest(BaseModel):
     loan_amount: float
     overdue_months: int
     debt_stress_level: str
     lender_name: str = "Lender"
-    language: str = "English"          # 👈 naya field
+    language: str = "English"          
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+    security_answer: str
+    new_password: str

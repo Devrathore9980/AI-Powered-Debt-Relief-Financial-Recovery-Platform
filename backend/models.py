@@ -11,6 +11,8 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     total_debt = Column(Float, default=0.0)
+    security_question = Column(String, nullable=True)   
+    security_answer = Column(String, nullable=True)      
 
     debt_records = relationship("DebtRecord", back_populates="owner")
 
@@ -22,7 +24,7 @@ class DebtRecord(Base):
     overdue_months = Column(Integer, nullable=False)
     debt_stress_level = Column(String, nullable=False)
     ai_strategy = Column(Text, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())   # 👈 naya
+    created_at = Column(DateTime(timezone=True), server_default=func.now())   
 
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="debt_records")
