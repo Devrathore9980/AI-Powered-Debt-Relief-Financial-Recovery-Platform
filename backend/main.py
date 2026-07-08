@@ -115,6 +115,24 @@ def update_profile(
     db.refresh(user)
     return user
 
+@app.delete("/delete-account")
+def delete_account(
+    email: str = Depends(get_current_user_email),
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    
+    db.query(DebtRecord).filter(DebtRecord.owner_id == user.id).delete()
+
+    
+    db.delete(user)
+    db.commit()
+
+    return {"message": "Your account and all your data have been permanently deleted."}
+
 
 
 # LOANS
