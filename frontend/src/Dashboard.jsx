@@ -43,6 +43,12 @@ function Dashboard({ userEmail, onLogout }) {
   const [profileError, setProfileError] = useState('')
   const [profileLoading, setProfileLoading] = useState(false)
   const [showProfileForm, setShowProfileForm] = useState(false)
+  const [monthlyIncome, setMonthlyIncome] = useState('')
+  const [monthlyExpenses, setMonthlyExpenses] = useState('')
+  const [existingDebts, setExistingDebts] = useState('')
+  const [profileResult, setProfileResult] = useState(null)
+  const [financialLoading, setFinancialLoading] = useState(false)
+  const [financialError, setFinancialError] = useState('')
   const [deletingAccount, setDeletingAccount] = useState(false)
   const [deleteAccountError, setDeleteAccountError] = useState('')
 
@@ -180,6 +186,25 @@ function Dashboard({ userEmail, onLogout }) {
       setDeletingId(null)
     }
   }
+
+  const handleSaveFinancialProfile = async (e) => {
+  e.preventDefault()
+  setFinancialLoading(true)
+  setFinancialError('')
+  setProfileResult(null)
+  try {
+    const response = await axios.post(`${import.meta.env.VITE_API_URL}/financial-profile`, {
+      monthly_income: parseFloat(monthlyIncome),
+      monthly_expenses: parseFloat(monthlyExpenses),
+      existing_debts: parseFloat(existingDebts)
+    }, authHeader)
+    setProfileResult(response.data)
+  } catch (err) {
+    setFinancialError(err.response ? err.response.data.detail : 'Unable to connect with backend')
+  } finally {
+    setFinancialLoading(false)
+  }
+}
 
   const handleDeleteAccount = async () => {
   const confirmed = window.confirm('Kya aap sach me apna account PERMANENTLY delete karna chahte ho? Saare loans bhi delete ho jayenge, ye wapas nahi ho sakta.')
@@ -409,7 +434,41 @@ function Dashboard({ userEmail, onLogout }) {
             {deletingAccount ? 'Deleting Account...' : 'Delete My Account'}
           </button>
           {deleteAccountError && <p className="message error">{deleteAccountError}</p>}
+        
+
         </div>
+
+        {/* ===== Financial Profile ===== */}
+        <div className="card">
+          <h3>Financial Profile</h3>
+          <form onSubmit={handleSaveFinancialProfile}>
+            <div className="field">
+              <label>Monthly Income (₹)</label>
+              <input type="number" value={monthlyIncome} onChange={(e) => setMonthlyIncome(e.target.value)} required />
+            </div>
+            <div className="field">
+              <label>Monthly Expenses (₹)</label>
+              <input type="number" value={monthlyExpenses} onChange={(e) => setMonthlyExpenses(e.target.value)} required />
+            </div>
+            <div className="field">
+              <label>Existing Debts (₹)</label>
+              <input type="number" value={existingDebts} onChange={(e) => setExistingDebts(e.target.value)} required />
+            </div>
+            <button className="btn-primary" type="submit" disabled={financialLoading}>
+              {financialLoading ? 'Saving...' : 'Save Financial Profile'}
+            </button>
+          </form>
+          {financialError && <p className="message error">{financialError}</p>}
+          {profileResult && (
+            <div className="strategy-box">
+              <h3>Financial Health Score</h3>
+              <p>Score: {profileResult.financial_health_score.toFixed(1)} / 100</p>
+            </div>
+          )}
+        </div>
+
+
+        
 
 
         
