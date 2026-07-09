@@ -6,7 +6,7 @@ import Landing from './landing'
 
 function App() {
   const [isLogin, setIsLogin] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'))
   const [showAuth, setShowAuth] = useState(false)
   const [showForgot, setShowForgot] = useState(false)   
 
