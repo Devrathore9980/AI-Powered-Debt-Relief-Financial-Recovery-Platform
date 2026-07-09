@@ -505,8 +505,14 @@ def create_settlement_record(
     db.add(record)
     db.commit()
     db.refresh(record)
-    return record
-
+    return {
+        "id": record.id,
+        "loan_id": record.loan_id,
+        "settlement_prediction": record.settlement_prediction,
+        "recommended_amount": record.recommended_amount,
+        "priority_level": record.priority_level,
+        "created_at": str(record.created_at)
+    }
 
 @app.get("/settlement-history", response_model=list[SettlementRecordResponse])
 def get_settlement_history(email: str = Depends(get_current_user_email), db: Session = Depends(get_db)):
@@ -514,5 +520,16 @@ def get_settlement_history(email: str = Depends(get_current_user_email), db: Ses
     records = db.query(SettlementRecord).filter(
         SettlementRecord.owner_id == user.id
     ).order_by(SettlementRecord.created_at.desc()).all()
-    return records
+
+    return [
+        {
+            "id": r.id,
+            "loan_id": r.loan_id,
+            "settlement_prediction": r.settlement_prediction,
+            "recommended_amount": r.recommended_amount,
+            "priority_level": r.priority_level,
+            "created_at": str(r.created_at)
+        }
+        for r in records
+    ]
 
