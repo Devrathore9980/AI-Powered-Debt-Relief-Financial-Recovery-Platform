@@ -1,6 +1,6 @@
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
-from jose import jwt
+from jose import jwt, JWTError
 import os
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
