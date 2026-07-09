@@ -49,6 +49,10 @@ function Dashboard({ userEmail, onLogout }) {
   const [profileResult, setProfileResult] = useState(null)
   const [financialLoading, setFinancialLoading] = useState(false)
   const [financialError, setFinancialError] = useState('')
+  const [settlementHistory, setSettlementHistory] = useState([])
+  const [settlementHistoryError, setSettlementHistoryError] = useState('')
+  const [creatingSettlementId, setCreatingSettlementId] = useState(null)
+  const [settlementCreateError, setSettlementCreateError] = useState('')
   const [deletingAccount, setDeletingAccount] = useState(false)
   const [deleteAccountError, setDeleteAccountError] = useState('')
 
@@ -94,11 +98,21 @@ function Dashboard({ userEmail, onLogout }) {
     }
   }
 
+  const fetchSettlementHistory = async () => {
+  try {
+    const response = await axios.get(`${import.meta.env.VITE_API_URL}/settlement-history`, authHeader)
+    setSettlementHistory(response.data)
+  } catch (err) {
+    setSettlementHistoryError(err.response ? err.response.data.detail : 'Settlement history cannot be loaded')
+  }
+}
+
   useEffect(() => {
-    fetchDashboardData()
-    fetchAiHistory()
-    fetchDebtTimeline()
-  }, [])
+  fetchDashboardData()
+  fetchAiHistory()
+  fetchDebtTimeline()
+  fetchSettlementHistory()
+}, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -203,6 +217,19 @@ function Dashboard({ userEmail, onLogout }) {
     setFinancialError(err.response ? err.response.data.detail : 'Unable to connect with backend')
   } finally {
     setFinancialLoading(false)
+  }
+}
+
+const handleCreateSettlementRecord = async (loanId) => {
+  setCreatingSettlementId(loanId)
+  setSettlementCreateError('')
+  try {
+    await axios.post(`${import.meta.env.VITE_API_URL}/loans/${loanId}/settlement-record`, {}, authHeader)
+    fetchSettlementHistory()
+  } catch (err) {
+    setSettlementCreateError(err.response ? err.response.data.detail : 'Unable to save settlement record')
+  } finally {
+    setCreatingSettlementId(null)
   }
 }
 
@@ -397,6 +424,7 @@ function Dashboard({ userEmail, onLogout }) {
         )}
 
         {/* ===== Profile Settings ===== */}
+
         <div className="card" id="profile-section">
           <div className="profile-toggle" onClick={() => setShowProfileForm(!showProfileForm)}>
             <h3>Profile Settings</h3>
@@ -422,6 +450,7 @@ function Dashboard({ userEmail, onLogout }) {
         </div>
 
         {/* ===== Danger Zone ===== */}
+
         <div className="card" style={{ borderColor: '#c0392b' }}>
           <h3 style={{ color: '#c0392b' }}>Danger Zone</h3>
           <p>Delete your account permanently. All your loans and associated data will be permanently deleted and cannot be recovered.</p>
@@ -439,6 +468,7 @@ function Dashboard({ userEmail, onLogout }) {
         </div>
 
         {/* ===== Financial Profile ===== */}
+
         <div className="card">
           <h3>Financial Profile</h3>
           <form onSubmit={handleSaveFinancialProfile}>
@@ -564,6 +594,9 @@ function Dashboard({ userEmail, onLogout }) {
                     <p><strong>Overdue Months:</strong> {loan.overdue_months}</p>
                     <p><strong>Debt Stress Level:</strong> {loan.debt_stress_level}</p>
                   </div>
+                  <button type="button" className="btn-secondary" onClick={() => handleCreateSettlementRecord(loan.id)} disabled={creatingSettlementId === loan.id}>
+                    {creatingSettlementId === loan.id ? 'Saving...' : 'Save Settlement Record'}
+                  </button>
                   <button type="button" className="btn-delete" onClick={() => handleDeleteLoan(loan.id)} disabled={deletingId === loan.id}>
                     {deletingId === loan.id ? 'Deleting...' : 'Delete'}
                   </button>
@@ -584,6 +617,9 @@ function Dashboard({ userEmail, onLogout }) {
             </button>
             <button type="button" className={`tab-btn ${activeTab === 'timeline' ? 'tab-active' : ''}`} onClick={() => setActiveTab('timeline')}>
               Debt Timeline
+            </button>
+            <button type="button" className={`tab-btn ${activeTab === 'settlement' ? 'tab-active' : ''}`} onClick={() => setActiveTab('settlement')}>
+              Settlement History
             </button>
           </div>
 
@@ -624,6 +660,23 @@ function Dashboard({ userEmail, onLogout }) {
               </div>
             </div>
           )}
+
+          {activeTab === 'settlement' && (
+            <div className="tab-content">
+              {settlementHistoryError && <p className="message error">{settlementHistoryError}</p>}
+              {settlementHistory.length === 0 && !settlementHistoryError && (
+                <p className="empty-state">Abhi tak koi settlement record save nahi hua hai. Loans section mein jaake "Save Settlement Record" dabao!</p>
+              )}
+              {settlementHistory.map((record) => (
+                <div key={record.id} className="history-item">
+                  <div className="history-item-header">
+                    <span>Loan #{record.loan_id} — Priority: {record.priority_level}</span>
+                  </div>
+                  <p className="history-strategy-text">{record.settlement_prediction}</p>
+                </div>
+              ))}
+            </div>
+          )}        
         </div>
       </div>
     </div>
