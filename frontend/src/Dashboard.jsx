@@ -89,6 +89,14 @@ function Dashboard({ userEmail, onLogout }) {
 
   // Naya — Theme toggle
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark')
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+  const handleLogoutClick = () => {
+    setIsLoggingOut(true)
+    setTimeout(() => {
+      onLogout()
+    }, 750)
+  }
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -382,7 +390,7 @@ const handleCreateSettlementRecord = async (loanId) => {
     : 'Add your first loan to see AI insights here.'
 
   return (
-    <div className="dashboard-page">
+    <div className={`dashboard-page ${isLoggingOut ? 'logging-out' : ''}`}>
       {/* ===== Parallax Background Decoration ===== */}
       <div className="dashboard-bg-decor" aria-hidden="true">
         <div className="bg-shape bg-card bg-card-1" ref={bgCard1}></div>
@@ -410,7 +418,7 @@ const handleCreateSettlementRecord = async (loanId) => {
               {theme === 'dark' ? '☀️' : '🌙'}
             </button>
             <div className="avatar">{userEmail?.charAt(0).toUpperCase()}</div>
-            <button className="btn-logout" onClick={onLogout}>Logout</button>
+            <button className="btn-logout" onClick={handleLogoutClick}>Logout</button>
           </div>
         </div>
       </nav>

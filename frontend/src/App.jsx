@@ -44,7 +44,7 @@ function App() {
       setLoginTransitioning(true)
       setTimeout(() => {
         setIsLoggedIn(true)
-      }, 650)
+      }, 460)
     } catch (error) {
       setMessage(error.response ? `Error: ${error.response.data.detail}` : 'Failed to connect to the backend')
     }
@@ -70,6 +70,7 @@ function App() {
     localStorage.removeItem('token')
     localStorage.removeItem('userEmail')
     setIsLoggedIn(false)
+    setShowAuth(false)
     setEmail('')
     setPassword('')
   }

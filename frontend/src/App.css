@@ -78,42 +78,67 @@ body {
   min-height: 100vh;
   background: var(--dp-bg);
   transition: background 0.3s ease;
-  animation: dashboardEnter 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: dashboardSpeedInDown 0.85s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-@keyframes dashboardEnter {
-  0% {
-    opacity: 0;
-    transform: scale(0.97) translateY(16px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+@keyframes dashboardSpeedInDown {
+  0%   { opacity: 0; transform: translateY(-115%) rotate(-1.5deg); }
+  45%  { opacity: 1; transform: translateY(2.5%)  rotate(0.8deg); }
+  62%  {             transform: translateY(-1.4%) rotate(-0.5deg); }
+  78%  {             transform: translateY(0.7%)  rotate(0.3deg); }
+  90%  {             transform: translateY(-0.3%) rotate(-0.15deg); }
+  100% { opacity: 1; transform: translateY(0)     rotate(0deg); }
 }
 
-/* ===== Login success: auth page zooms + fades out just before Dashboard mounts ===== */
+/* ===== Login success: card speeds out upward, background fades with it ===== */
 .auth-transitioning .card {
-  animation: authSuccessZoom 0.6s ease forwards;
+  animation: authSpeedOutUp 0.45s cubic-bezier(0.7, 0, 0.9, 0.2) forwards;
 }
 
 .auth-transitioning .auth-bg-card,
 .auth-transitioning h1 {
-  animation: authBgFadeOut 0.6s ease forwards;
+  animation: authBgFadeOut 0.4s ease forwards;
 }
 
 .auth-transitioning::before {
-  animation: authBgFadeOut 0.6s ease forwards;
+  animation: authBgFadeOut 0.4s ease forwards;
 }
 
-@keyframes authSuccessZoom {
-  0% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0; transform: scale(1.06); }
+@keyframes authSpeedOutUp {
+  0%   { opacity: 1; transform: translateY(0) rotate(0deg); }
+  100% { opacity: 0; transform: translateY(-150%) rotate(-8deg); }
 }
 
 @keyframes authBgFadeOut {
   0% { opacity: 1; }
   100% { opacity: 0; }
+}
+
+/* ===== Logout: dashboard shrinks down into a small chip shape, then landing page returns ===== */
+.dashboard-page.logging-out {
+  animation: dashboardShrinkToChip 0.75s cubic-bezier(0.6, 0, 0.85, 0.15) forwards;
+  transform-origin: center center;
+}
+
+@keyframes dashboardShrinkToChip {
+  0%   {
+    transform: scale(1);
+    opacity: 1;
+    border-radius: 0px;
+    box-shadow: 0 0 0 rgba(224, 172, 75, 0);
+  }
+  55%  {
+    transform: scale(0.32);
+    opacity: 1;
+    border-radius: 28px;
+    box-shadow: 0 0 60px rgba(224, 172, 75, 0.45);
+  }
+  100% {
+    transform: scale(0.035);
+    opacity: 0;
+    border-radius: 6px;
+    box-shadow: 0 0 90px rgba(224, 172, 75, 0.75);
+  }
 }
 
 .Dashboard {
