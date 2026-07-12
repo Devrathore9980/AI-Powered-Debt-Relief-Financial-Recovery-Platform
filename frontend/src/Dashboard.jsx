@@ -5,7 +5,6 @@ import {
   PieChart, Pie, Cell, Legend
 } from 'recharts'
 
-// ===== Reveal: fades + slides an element up into view as the user scrolls to it =====
 function Reveal({ children, delay = 0, className = '', style = {} }) {
   const ref = useRef(null)
   const [visible, setVisible] = useState(false)
@@ -99,6 +98,36 @@ function Dashboard({ userEmail, onLogout }) {
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark')
   }
+
+  // ===== Parallax background decoration (reacts to scroll) =====
+  const bgCard1 = useRef(null)
+  const bgCard2 = useRef(null)
+  const bgCard3 = useRef(null)
+  const bgSymbol1 = useRef(null)
+  const bgSymbol2 = useRef(null)
+  const bgLine = useRef(null)
+
+  useEffect(() => {
+    const layers = [
+      { ref: bgCard1, speed: 0.12, rotate: -12 },
+      { ref: bgCard2, speed: 0.22, rotate: 16 },
+      { ref: bgCard3, speed: 0.08, rotate: -6 },
+      { ref: bgSymbol1, speed: 0.18, rotate: 0 },
+      { ref: bgSymbol2, speed: 0.28, rotate: 0 },
+      { ref: bgLine, speed: 0.05, rotate: 0 },
+    ]
+    const onScroll = () => {
+      const y = window.scrollY
+      layers.forEach(({ ref, speed, rotate }) => {
+        if (ref.current) {
+          ref.current.style.transform = `translateY(${y * speed}px) rotate(${rotate}deg)`
+        }
+      })
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   const token = localStorage.getItem('token')
   const authHeader = { headers: { Authorization: `Bearer ${token}` } }
@@ -354,6 +383,18 @@ const handleCreateSettlementRecord = async (loanId) => {
 
   return (
     <div className="dashboard-page">
+      {/* ===== Parallax Background Decoration ===== */}
+      <div className="dashboard-bg-decor" aria-hidden="true">
+        <div className="bg-shape bg-card bg-card-1" ref={bgCard1}></div>
+        <div className="bg-shape bg-card bg-card-2" ref={bgCard2}></div>
+        <div className="bg-shape bg-card bg-card-3" ref={bgCard3}></div>
+        <span className="bg-shape bg-symbol bg-symbol-1" ref={bgSymbol1}>₹</span>
+        <span className="bg-shape bg-symbol bg-symbol-2" ref={bgSymbol2}>₹</span>
+        <svg className="bg-shape bg-line" ref={bgLine} viewBox="0 0 400 120" preserveAspectRatio="none">
+          <polyline points="0,90 60,60 120,75 180,30 240,50 300,15 360,35 400,10" />
+        </svg>
+      </div>
+
       {/* ===== Top Navbar ===== */}
       <nav className="navbar-full">
         <div className="navbar-inner">
