@@ -7,16 +7,15 @@ function Landing({ onGetStarted }) {
     setZooming(true)
     setTimeout(() => {
       onGetStarted()
-    }, 1200)
+    }, 1300)
   }
 
   return (
     <div className="Landing">
-      {/* Floating background cards */}
-      <div className="landing-bg-cards">
+      <div className={`landing-bg-cards ${zooming ? 'is-zooming' : ''}`}>
         <div className="floating-card fc-1"></div>
         <div className="floating-card fc-2"></div>
-        <div className="floating-card fc-3"></div>
+        <div className="floating-card fc-3 zoom-target"></div>
         <div className="floating-card fc-4"></div>
         <div className="floating-card fc-5"></div>
         <div className="floating-card fc-6"></div>
@@ -24,7 +23,7 @@ function Landing({ onGetStarted }) {
         <div className="floating-card fc-8"></div>
       </div>
 
-      <div className="landing-content">
+      <div className={`landing-content ${zooming ? 'content-fade' : ''}`}>
         <span className="eyebrow">FinRelief AI</span>
         <h1>Reduce the Burden of Your Loan, the Smart Way</h1>
         <p className="landing-subtitle">
@@ -49,13 +48,6 @@ function Landing({ onGetStarted }) {
           </div>
         </div>
       </div>
-
-      {/* Zoom transition overlay */}
-      {zooming && (
-        <div className="card-zoom-overlay">
-          <div className="zoom-card"></div>
-        </div>
-      )}
     </div>
   )
 }

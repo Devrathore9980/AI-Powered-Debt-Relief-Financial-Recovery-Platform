@@ -109,12 +109,31 @@ function App() {
   }
 
   return (
-    <div className="App">
-      <h1>FinRelief AI</h1>
-      <div className="card">
-        <button className="btn-link" onClick={() => { setIsLogin(!isLogin); setMessage('') }}>
-          {isLogin ? 'Create New Account →' : 'Already have an account? Sign in →'}
-        </button>
+    <div className="AuthPage">
+      <div className="auth-bg-card">
+        <div className="abc-top">
+          <div className="abc-chip"></div>
+          <span className="abc-brand">FinRelief AI</span>
+        </div>
+        <div className="abc-number">•••• •••• •••• 4521</div>
+        <div className="abc-bottom">
+          <div>
+            <p className="abc-label">Card Holder</p>
+            <p className="abc-value">{name || 'YOUR NAME'}</p>
+          </div>
+          <div>
+            <p className="abc-label">Valid Thru</p>
+            <p className="abc-value">12/29</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="App">
+        <h1>FinRelief AI</h1>
+        <div className="card">
+          <button className="btn-link" onClick={() => { setIsLogin(!isLogin); setMessage('') }}>
+            {isLogin ? 'Create New Account →' : 'Already have an account? Sign in →'}
+          </button>
 
         <form onSubmit={isLogin ? handleLogin : handleRegister}>
           {!isLogin && (
@@ -155,6 +174,7 @@ function App() {
         )}
 
         {message && <p className="message">{message}</p>}
+        </div>
       </div>
     </div>
   )
