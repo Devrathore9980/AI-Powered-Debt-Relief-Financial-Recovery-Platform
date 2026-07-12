@@ -723,7 +723,7 @@ const handleCreateSettlementRecord = async (loanId) => {
             <div className="tab-content">
               {historyError && <p className="message error">{historyError}</p>}
               {aiHistory.length === 0 && !historyError && (
-                <p className="empty-state">Abhi tak koi AI strategy generate nahi hui hai. Ek loan add karo upar!</p>
+                <p className="empty-state">No AI strategies have been generated yet. Add a loan above to get started!</p>
               )}
               {aiHistory.map((item) => (
                 <div key={item.loan_id} className="history-item">
@@ -741,7 +741,7 @@ const handleCreateSettlementRecord = async (loanId) => {
             <div className="tab-content">
               {timelineError && <p className="message error">{timelineError}</p>}
               {debtTimeline.length === 0 && !timelineError && (
-                <p className="empty-state">Abhi tak timeline mein kuch nahi hai. Ek loan add karo upar!</p>
+                <p className="empty-state">Nothing has been added to the timeline yet. Add a loan above to get started!</p>
               )}
               <div className="timeline">
                 {debtTimeline.map((item) => (
@@ -761,7 +761,7 @@ const handleCreateSettlementRecord = async (loanId) => {
             <div className="tab-content">
               {settlementHistoryError && <p className="message error">{settlementHistoryError}</p>}
               {settlementHistory.length === 0 && !settlementHistoryError && (
-                <p className="empty-state">Abhi tak koi settlement record save nahi hua hai. Loans section mein jaake "Save Settlement Record" dabao!</p>
+                <p className="empty-state">No settlement record has been saved yet. Go to the Loans section and click "Save Settlement Record."</p>
               )}
               {settlementHistory.map((record) => (
                 <div key={record.id} className="history-item">

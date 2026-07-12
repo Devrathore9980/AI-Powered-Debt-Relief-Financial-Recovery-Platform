@@ -199,6 +199,14 @@ def create_debt_record(record: DebtRecordCreate, db: Session = Depends(get_db)):
     db.add(new_record)
     db.commit()
     db.refresh(new_record)
+
+    ai_history_entry = AIHistoryRecord(
+        negotiation_strategy=strategy,
+        owner_id=user.id
+    )
+    db.add(ai_history_entry)
+    db.commit()
+
     return new_record
 
 
@@ -532,4 +540,3 @@ def get_settlement_history(email: str = Depends(get_current_user_email), db: Ses
         }
         for r in records
     ]
-
