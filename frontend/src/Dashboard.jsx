@@ -1,9 +1,41 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from 'recharts'
+
+// ===== Reveal: fades + slides an element up into view as the user scrolls to it =====
+function Reveal({ children, delay = 0, className = '', style = {} }) {
+  const ref = useRef(null)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true)
+          observer.unobserve(el)
+        }
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+    <div
+      ref={ref}
+      className={`reveal ${visible ? 'reveal-visible' : ''} ${className}`}
+      style={{ transitionDelay: `${delay}ms`, ...style }}
+    >
+      {children}
+    </div>
+  )
+}
 
 function Dashboard({ userEmail, onLogout }) {
   const [loanAmount, setLoanAmount] = useState('')
@@ -348,11 +380,11 @@ const handleCreateSettlementRecord = async (loanId) => {
         <p className="dash-subtitle">AI-powered insights to accelerate your path to financial freedom</p>
 
         {/* ===== AI Insight Banner ===== */}
-        <div className="insight-banner">
+        <Reveal className="insight-banner">
           <span className="insight-icon">🧠</span>
           <p><strong>AI Insight:</strong> {insightText}</p>
           <button className="btn-view-plan" onClick={() => scrollTo('history-section')}>View Plan →</button>
-        </div>
+        </Reveal>
 
         {dashboardError && <p className="message error">{dashboardError}</p>}
 
@@ -362,26 +394,34 @@ const handleCreateSettlementRecord = async (loanId) => {
 
         {dashboardData && (
           <div className="stat-grid">
-            <div className="stat-card stat-teal">
-              <span className="stat-icon">💰</span>
-              <p className="stat-label">Total Outstanding Debt</p>
-              <p className="stat-value">₹{dashboardData.total_debt}</p>
-            </div>
-            <div className="stat-card stat-gold">
-              <span className="stat-icon">📄</span>
-              <p className="stat-label">Total Loans</p>
-              <p className="stat-value">{dashboardData.total_loans}</p>
-            </div>
-            <div className={`stat-card stat-status-${dashboardData.health_status.toLowerCase()}`}>
-              <span className="stat-icon">🩺</span>
-              <p className="stat-label">Health Status</p>
-              <p className="stat-value">{dashboardData.health_status}</p>
-            </div>
-            <div className="stat-card stat-blue">
-              <span className="stat-icon">🤖</span>
-              <p className="stat-label">AI Strategies Generated</p>
-              <p className="stat-value">{aiHistory.length}</p>
-            </div>
+            <Reveal delay={0}>
+              <div className="stat-card stat-teal">
+                <span className="stat-icon">💰</span>
+                <p className="stat-label">Total Outstanding Debt</p>
+                <p className="stat-value">₹{dashboardData.total_debt}</p>
+              </div>
+            </Reveal>
+            <Reveal delay={80}>
+              <div className="stat-card stat-gold">
+                <span className="stat-icon">📄</span>
+                <p className="stat-label">Total Loans</p>
+                <p className="stat-value">{dashboardData.total_loans}</p>
+              </div>
+            </Reveal>
+            <Reveal delay={160}>
+              <div className={`stat-card stat-status-${dashboardData.health_status.toLowerCase()}`}>
+                <span className="stat-icon">🩺</span>
+                <p className="stat-label">Health Status</p>
+                <p className="stat-value">{dashboardData.health_status}</p>
+              </div>
+            </Reveal>
+            <Reveal delay={240}>
+              <div className="stat-card stat-blue">
+                <span className="stat-icon">🤖</span>
+                <p className="stat-label">AI Strategies Generated</p>
+                <p className="stat-value">{aiHistory.length}</p>
+              </div>
+            </Reveal>
           </div>
         )}
 
@@ -391,41 +431,46 @@ const handleCreateSettlementRecord = async (loanId) => {
 
         {dashboardData && dashboardData.loans && dashboardData.loans.length > 0 && (
           <div className="chart-grid">
-            <div className="chart-card">
-              <h3>Total Debt Added Over Time</h3>
-              <p className="chart-sub">Cumulative debt as loans were added</p>
-              <ResponsiveContainer width="100%" height={240}>
-                <LineChart data={timelineChartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
-                  <XAxis dataKey="date" stroke="var(--ink-muted)" fontSize={12} />
-                  <YAxis stroke="var(--ink-muted)" fontSize={12} />
-                  <Tooltip contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--ink)' }} />
-                  <Line type="monotone" dataKey="total" stroke="var(--color-primary)" strokeWidth={2.5} dot={{ r: 4 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            <Reveal delay={0}>
+              <div className="chart-card">
+                <h3>Total Debt Added Over Time</h3>
+                <p className="chart-sub">Cumulative debt as loans were added</p>
+                <ResponsiveContainer width="100%" height={240}>
+                  <LineChart data={timelineChartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+                    <XAxis dataKey="date" stroke="var(--ink-muted)" fontSize={12} />
+                    <YAxis stroke="var(--ink-muted)" fontSize={12} />
+                    <Tooltip contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--ink)' }} />
+                    <Line type="monotone" dataKey="total" stroke="var(--color-primary)" strokeWidth={2.5} dot={{ r: 4 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </Reveal>
 
-            <div className="chart-card">
-              <h3>Debt Breakdown</h3>
-              <p className="chart-sub">By stress level</p>
-              <ResponsiveContainer width="100%" height={240}>
-                <PieChart>
-                  <Pie data={breakdownChartData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={85} paddingAngle={3}>
-                    {breakdownChartData.map((entry, index) => (
-                      <Cell key={index} fill={stressColors[entry.name]} />
-                    ))}
-                  </Pie>
-                  <Legend />
-                  <Tooltip contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--ink)' }} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+            <Reveal delay={120}>
+              <div className="chart-card">
+                <h3>Debt Breakdown</h3>
+                <p className="chart-sub">By stress level</p>
+                <ResponsiveContainer width="100%" height={240}>
+                  <PieChart>
+                    <Pie data={breakdownChartData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={85} paddingAngle={3}>
+                      {breakdownChartData.map((entry, index) => (
+                        <Cell key={index} fill={stressColors[entry.name]} />
+                      ))}
+                    </Pie>
+                    <Legend />
+                    <Tooltip contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--ink)' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </Reveal>
           </div>
         )}
 
         {/* ===== Profile Settings ===== */}
 
-        <div className="card" id="profile-section">
+        <Reveal className="card" delay={0}>
+          <div id="profile-section">
           <div className="profile-toggle" onClick={() => setShowProfileForm(!showProfileForm)}>
             <h3>Profile Settings</h3>
             <span className="expand-icon">{showProfileForm ? '−' : '+'}</span>
@@ -447,11 +492,12 @@ const handleCreateSettlementRecord = async (loanId) => {
               {profileError && <p className="message error">{profileError}</p>}
             </form>
           )}
-        </div>
+          </div>
+        </Reveal>
 
         {/* ===== Danger Zone ===== */}
 
-        <div className="card" style={{ borderColor: '#c0392b' }}>
+        <Reveal className="card" delay={0} style={{ borderColor: '#c0392b' }}>
           <h3 style={{ color: '#c0392b' }}>Danger Zone</h3>
           <p>Delete your account permanently. All your loans and associated data will be permanently deleted and cannot be recovered.</p>
           <button
@@ -463,13 +509,11 @@ const handleCreateSettlementRecord = async (loanId) => {
             {deletingAccount ? 'Deleting Account...' : 'Delete My Account'}
           </button>
           {deleteAccountError && <p className="message error">{deleteAccountError}</p>}
-        
-
-        </div>
+        </Reveal>
 
         {/* ===== Financial Profile ===== */}
 
-        <div className="card">
+        <Reveal className="card" delay={0}>
           <h3>Financial Profile</h3>
           <form onSubmit={handleSaveFinancialProfile}>
             <div className="field">
@@ -495,7 +539,7 @@ const handleCreateSettlementRecord = async (loanId) => {
               <p>Score: {profileResult.financial_health_score.toFixed(1)} / 100</p>
             </div>
           )}
-        </div>
+        </Reveal>
 
 
         
@@ -506,7 +550,7 @@ const handleCreateSettlementRecord = async (loanId) => {
         {/* ===== Add Loan Form ===== */}
 
 
-        <div className="card">
+        <Reveal className="card" delay={0}>
           <form onSubmit={handleSubmit}>
             <div className="field">
               <label>Loan Amount (₹)</label>
@@ -576,14 +620,15 @@ const handleCreateSettlementRecord = async (loanId) => {
               <pre className="email-text">{emailContent}</pre>
             </div>
           )}
-        </div>
+        </Reveal>
 
 
         {/* ===== Loans List ===== */}
 
 
         {dashboardData && dashboardData.loans && dashboardData.loans.length > 0 && (
-          <div className="card" id="loans-section">
+          <Reveal className="card" delay={0}>
+            <div id="loans-section">
             <h3>Your Loans</h3>
             {deleteError && <p className="message error">{deleteError}</p>}
             {dashboardData.loans.map((loan) => (
@@ -603,14 +648,16 @@ const handleCreateSettlementRecord = async (loanId) => {
                 </div>
               </div>
             ))}
-          </div>
+            </div>
+          </Reveal>
         )}
 
 
         {/* ===== History / Timeline Tabs ===== */}
 
 
-        <div className="card" id="history-section">
+        <Reveal className="card" delay={0}>
+          <div id="history-section">
           <div className="tab-row">
             <button type="button" className={`tab-btn ${activeTab === 'history' ? 'tab-active' : ''}`} onClick={() => setActiveTab('history')}>
               AI Strategy History
@@ -677,7 +724,8 @@ const handleCreateSettlementRecord = async (loanId) => {
               ))}
             </div>
           )}        
-        </div>
+          </div>
+        </Reveal>
       </div>
     </div>
   )
