@@ -114,30 +114,30 @@ body {
   100% { opacity: 0; }
 }
 
-/* ===== Logout: dashboard shrinks down into a small chip shape, then landing page returns ===== */
+/* ===== Logout: dashboard shrinks and flies toward the zoom-target card's chip (top-right), then landing page returns ===== */
 .dashboard-page.logging-out {
-  animation: dashboardShrinkToChip 0.75s cubic-bezier(0.6, 0, 0.85, 0.15) forwards;
-  transform-origin: center center;
+  animation: dashboardShrinkToChip 0.8s cubic-bezier(0.6, 0, 0.85, 0.15) forwards;
+  transform-origin: top right;
 }
 
 @keyframes dashboardShrinkToChip {
   0%   {
-    transform: scale(1);
+    transform: scale(1) translate(0, 0);
     opacity: 1;
     border-radius: 0px;
     box-shadow: 0 0 0 rgba(224, 172, 75, 0);
   }
-  55%  {
-    transform: scale(0.32);
+  50%  {
+    transform: scale(0.28) translate(18%, -12%);
     opacity: 1;
     border-radius: 28px;
     box-shadow: 0 0 60px rgba(224, 172, 75, 0.45);
   }
   100% {
-    transform: scale(0.035);
+    transform: scale(0.015) translate(32%, -22%);
     opacity: 0;
     border-radius: 6px;
-    box-shadow: 0 0 90px rgba(224, 172, 75, 0.75);
+    box-shadow: 0 0 90px rgba(224, 172, 75, 0.8);
   }
 }
 
