@@ -61,7 +61,7 @@ html {
 
 body {
   margin: 0;
-  background-color: var(--color-bg);
+  background-color: #0A0A0A;
   font-family: var(--font-body);
   color: var(--color-ink);
 }
