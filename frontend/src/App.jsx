@@ -7,6 +7,7 @@ import Landing from './landing'
 function App() {
   const [isLogin, setIsLogin] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'))
+  const [loginTransitioning, setLoginTransitioning] = useState(false)
   const [showAuth, setShowAuth] = useState(false)
   const [showForgot, setShowForgot] = useState(false)   
 
@@ -40,7 +41,10 @@ function App() {
       )
       localStorage.setItem('token', response.data.access_token)
       localStorage.setItem('userEmail', email)
-      setIsLoggedIn(true)
+      setLoginTransitioning(true)
+      setTimeout(() => {
+        setIsLoggedIn(true)
+      }, 650)
     } catch (error) {
       setMessage(error.response ? `Error: ${error.response.data.detail}` : 'Failed to connect to the backend')
     }
@@ -109,7 +113,7 @@ function App() {
   }
 
   return (
-    <div className="AuthPage">
+    <div className={`AuthPage ${loginTransitioning ? 'auth-transitioning' : ''}`}>
       <div className="auth-bg-card">
         <div className="abc-top">
           <div className="abc-chip"></div>

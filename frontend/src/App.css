@@ -78,6 +78,40 @@ body {
   min-height: 100vh;
   background: var(--dp-bg);
   transition: background 0.3s ease;
+  animation: dashboardSpeedIn 0.85s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@keyframes dashboardSpeedIn {
+  0%   { opacity: 0;   transform: translateX(115%)  rotate(1.5deg); }
+  45%  { opacity: 1;   transform: translateX(-2.5%) rotate(-0.8deg); }
+  62%  {               transform: translateX(1.4%)  rotate(0.5deg); }
+  78%  {               transform: translateX(-0.7%) rotate(-0.3deg); }
+  90%  {               transform: translateX(0.3%)  rotate(0.15deg); }
+  100% { opacity: 1;   transform: translateX(0)      rotate(0deg); }
+}
+
+/* ===== Login success: card speeds out left, background fades with it ===== */
+.auth-transitioning .card {
+  animation: authSpeedOutLeft 0.45s cubic-bezier(0.7, 0, 0.9, 0.2) forwards;
+}
+
+.auth-transitioning .auth-bg-card,
+.auth-transitioning h1 {
+  animation: authBgFadeOut 0.4s ease forwards;
+}
+
+.auth-transitioning::before {
+  animation: authBgFadeOut 0.4s ease forwards;
+}
+
+@keyframes authSpeedOutLeft {
+  0%   { opacity: 1; transform: translateX(0) rotate(0deg); }
+  100% { opacity: 0; transform: translateX(-150%) rotate(-14deg); }
+}
+
+@keyframes authBgFadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 .Dashboard {
