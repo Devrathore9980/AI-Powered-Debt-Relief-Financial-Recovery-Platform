@@ -272,7 +272,7 @@ git push origin feature-name
 
 ## 📄 License
 
-This project is developed for educational, research, and portfolio purposes.
+This project is developed for educational, research, and portfolio purposes .
 
 ---
 
