@@ -1,6 +1,6 @@
 # 💰 AI-Powered Debt Relief & Financial Recovery Platform
 
-An AI-powered web platform that helps individuals analyze their debt, understand their financial situation, receive personalized repayment strategies, and generate AI-assisted settlement recommendations. The platform aims to simplify debt management and support users in achieving financial stability.
+An AI-powered web platform that helps individuals analyze their debt , understand their financial situation, receive personalized repayment strategies, and generate AI-assisted settlement recommendations. The platform aims to simplify debt management and support users in achieving financial stability.
 
 ---
 
